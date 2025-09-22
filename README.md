@@ -1,91 +1,104 @@
-# MT Dashboard
+# 📊 MT Dashboard
 
-## Overview
+A PHP-based dashboard for displaying and analyzing trading data from MetaTrader (MT4/MT5).  
+It provides a lightweight web interface for monitoring performance, with database persistence and a responsive frontend.
 
-MT Dashboard is a lightweight PHP + JS project designed to visualize and manage trading data exported from MetaTrader 4/5 terminals.  
-It connects MetaTrader (via custom `.mq4` / `.mq5` exporters) with a backend API (PHP) and a web dashboard.
+---
 
-## Features
+## 🚀 Features
 
-- 📊 Real-time trading data visualization
-- 🔌 API endpoints for receiving and fetching data (`api/` folder)
-- 🖥️ Dashboard UI (`index.php`, assets, and JS logic)
-- 📂 Log system (`logs/api.log`)
-- ⚙️ MetaTrader exporters (`TradingDataExporter.mq4` / `.mq5`) for data feed
-- 🔒 Configurable database connection (`api/config.php`)
+- 📈 Display trading results and account metrics.  
+- 🔄 Integration with MetaTrader 4/5 exporters (via database).  
+- 🗄️ MariaDB/MySQL persistence for account and trade history.  
+- 🎨 Responsive UI with **Bootstrap 5.2.3**.  
+- ⚡ Lightweight, no heavy frameworks – pure PHP + MySQL + Bootstrap.  
 
-## Project Structure
+---
+
+## 🏗️ Project Structure
 
 ```
-.
-├── api/                  # PHP API endpoints
-│   ├── config.php        # Database configuration
-│   ├── get_data.php      # Returns trading data (JSON)
-│   └── receive_data.php  # Receives trading data from MT4/MT5
-│
-├── assets/               # Frontend assets (CSS, JS, vendor libs, images)
+mt-dashboard/
+├── assets/               # Frontend assets (Bootstrap 5.2.3, custom CSS/JS, vendor libs, images)
 │   └── ...
-│
-├── js/
-│   └── trading-dashboard.js  # Core dashboard logic
-│
-├── logs/
-│   └── api.log           # Log file for API requests/errors
-│
-├── mql/
-│   ├── TradingDataExporter.mq4  # MT4 exporter script
-│   └── TradingDataExporter.mq5  # MT5 exporter script
-│
-├── index.php             # Main dashboard entry point
-├── maintenance.php       # Maintenance mode page
-├── mysql.txt             # Database schema (SQL)
-└── Test API Endpoints.txt # Notes for testing API endpoints
+├── config/               # Database and app configuration
+│   └── config.php
+├── includes/             # PHP includes (header, footer, helpers)
+│   └── ...
+├── pages/                # Dashboard pages (overview, accounts, trades, etc.)
+│   └── ...
+├── sql/                  # SQL schema and migrations
+│   └── schema.sql
+├── index.php             # Main entry point (router / dashboard home)
+├── .gitignore
+└── README.md
 ```
 
-## Installation
+---
 
-1. Clone the repository:
+## ⚙️ Tech Stack
 
-   ```bash
-   git clone https://github.com/fredp74/mt-dashboard.git
-   cd mt-dashboard
-   ```
+- **Backend**: PHP 8+  
+- **Database**: MariaDB 11 / MySQL 8  
+- **Frontend**: Bootstrap 5.2.3 + custom CSS/JS  
+- **MetaTrader Export**: Scripts push trading data into MariaDB via `.sql` inserts  
 
-2. Import the database schema from `mysql.txt` into your MySQL/MariaDB server.
+---
 
-3. Configure the database connection in `api/config.php`.
+## 🔧 Setup
 
-4. Deploy the `.mq4` (MetaTrader 4) or `.mq5` (MetaTrader 5) file from `/mql` into your MetaTrader `Experts` or `Scripts` folder.  
-   **⚠️ MetaTrader 4/5 is mandatory — without it, the exporters cannot push trading data to the dashboard.**
+### 1. Clone Repository
 
-5. Serve the project with Apache/Nginx + PHP 8.x.
-
-## API Endpoints
-
-- `POST /api/receive_data.php` → Receives trading data from MetaTrader exporters.  
-- `GET /api/get_data.php` → Fetches trading data in JSON for the dashboard.
-
-See `Test API Endpoints.txt` for usage examples.
-
-## Requirements
-
-- PHP 8.x + Apache/Nginx
-- MySQL/MariaDB
-- MetaTrader 4 or 5 (for running the `.mq4` / `.mq5` exporters)
-- Web browser (for dashboard visualization)
-
-## Logs
-
-All incoming API requests and errors are logged in:
-
-```
-logs/api.log
+```bash
+git clone https://github.com/fredp74/mt-dashboard.git
+cd mt-dashboard
 ```
 
-## Status
+### 2. Database
 
-✅ Core PHP API implemented  
-✅ Database schema ready  
-✅ MetaTrader exporters included  
-🚧 Dashboard UI improvements possible (CSS/UX)  
-⚠️ Future improvement: authentication + role-based access
+- Create a database in MariaDB/MySQL:  
+
+```sql
+CREATE DATABASE mtdashboard CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+```
+
+- Import schema:
+
+```bash
+mysql -u youruser -p mtdashboard < sql/schema.sql
+```
+
+### 3. Configuration
+
+Edit `config/config.php` with your DB credentials:
+
+```php
+<?php
+$host = "localhost";
+$db   = "mtdashboard";
+$user = "youruser";
+$pass = "yourpassword";
+?>
+```
+
+### 4. Run Locally
+
+- Place the repo inside your Apache/Nginx document root (or use Docker/LAMP stack).  
+- Access via `http://localhost/mt-dashboard`.
+
+---
+
+## 📡 MetaTrader Integration
+
+- Exporters from **MT4/MT5** push trading data (orders, balance, history) into the MariaDB database.  
+- The dashboard queries this database to display charts, account stats, and trade logs.  
+- Without MetaTrader → no live data.  
+
+---
+
+## ✅ Status
+
+- ✅ Database schema + PHP dashboard scaffold  
+- ✅ Bootstrap 5.2.3 responsive frontend  
+- 🚧 To add: extended charts & KPIs  
+- ⚠️ Note: MetaTrader exporters required for live data  
