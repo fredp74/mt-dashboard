@@ -1,0 +1,38 @@
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# PHP
+vendor/
+composer.lock
+
+# Node (if frontend assets get compiled)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cache / Build
+.cache/
+dist/
+build/
+tmp/
+*.pid
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# MetaTrader generated binaries
+*.ex4
+*.ex5
+*.hst
