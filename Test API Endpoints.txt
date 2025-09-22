@@ -1,0 +1,8 @@
+# Test receive endpoint
+curl -X POST https://algotradingresearch.com/dashboard/api/receive_data.php \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-api-key" \
+  -d '{"account_type":"MT5","balance":1000,"equity":1050,"profit":50}'
+
+# Test get endpoint
+curl https://algotradingresearch.com/dashboard/api/get_data.php?period=24h
