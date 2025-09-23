@@ -149,7 +149,7 @@ CREATE TABLE trades (
    ```
 2. Configure database in `api/config.php`.  
 3. Import schema from `mysql.txt`.  
-4. Deploy `TradingDataExporter.mq4` or `.mq5` into your MetaTrader terminal.  
+4. Compile `TradingDataExporter.mq4` or `.mq5` with your MetaTrader editor and deploy the ex4/ex5 into your terminal.  
 5. Start dashboard:
    ```
    http://localhost/mt-dashboard/
