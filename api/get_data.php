@@ -1,14 +1,16 @@
 <?php
+require_once __DIR__ . '/config.php';
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, X-API-Key');
 
 // Database connection
-$conn = new mysqli('localhost', 'username', 'password', 'database');
-if ($conn->connect_error) {
+$conn = getDBConnection();
+if (!$conn) {
     http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed: ' . $conn->connect_error]);
+    echo json_encode(['error' => 'Database connection failed']);
     exit;
 }
 
@@ -50,13 +52,18 @@ WHERE id IN (
 )";
 
 $currentResult = $conn->query($currentQuery);
+if ($currentResult === false) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Failed to fetch current account data']);
+    exit;
+}
 $currentData = [];
 while ($row = $currentResult->fetch_assoc()) {
     $currentData[$row['account_type']] = $row;
 }
 
 // Get historical data for charts
-$historyQuery = "SELECT 
+$historyQuery = "SELECT
     DATE_FORMAT(timestamp, '%Y-%m-%d %H:%i:00') as time_group,
     account_type,
     AVG(balance) as balance,
@@ -69,6 +76,11 @@ GROUP BY time_group, account_type
 ORDER BY time_group ASC";
 
 $historyResult = $conn->query($historyQuery);
+if ($historyResult === false) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Failed to fetch historical account data']);
+    exit;
+}
 $historyData = [];
 while ($row = $historyResult->fetch_assoc()) {
     $historyData[] = [
@@ -202,6 +214,8 @@ $response = [
     'status' => 'success',
     'data_points' => count($historyData)
 ];
+
+logAPICall('get_data', ['period' => $period], $response);
 
 echo json_encode($response);
 $conn->close();
