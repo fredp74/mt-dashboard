@@ -23,6 +23,7 @@
   <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
   <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
   <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-p+w7Y2FfTjWl7kJzi10BGSAdoo6gWQBaIj++ImQxGc1dQc5sKXc5teLoI0lp4rWuIwoMvV7lidh+NangGfKT7Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
   <!-- Template Main CSS File -->
   <link href="assets/css/style.css" rel="stylesheet">
@@ -35,27 +36,27 @@
 <body class="dashboard-page">
 
    <!-- ======= Header ======= -->
-  <header id="header" class="fixed-top d-flex align-items-center">
-    <div class="container d-flex align-items-center">
-
-      <div class="logo me-auto">
-        <a href="/"><img src="assets/img/logo.png" alt="" class="img-fluid"></a>
+  <header class="atr-header fixed-top">
+    <div class="container header-container">
+      <div class="logo">
+        <a href="/"><img src="assets/img/logo.png" alt="AlgoTradingResearch Logo" class="img-fluid"></a>
       </div>
-
-      <nav id="navbar" class="navbar order-last order-lg-0">
-        <ul>
-          <li><a class="nav-link scrollto" href="/#hero">Home</a></li>
-          <li><a class="nav-link scrollto" href="/#about">About Us</a></li>
-          <li><a class="nav-link scrollto" href="/#services">Services</a></li>
-          <li><a class="nav-link scrollto" href="/#faq">FAQ</a></li>
-          <li><a class="nav-link scrollto" href="/#contact">Contact</a></li>
-          <li><a class="nav-link scrollto" href="partnership.php">Partnership</a></li>
-          <li><a class="nav-link active" href="dashboard.php">Dashboard</a></li>
+      <nav class="atr-nav">
+        <ul id="atr-menu">
+          <li><a href="/#hero">Home</a></li>
+          <li><a href="/#about">The Fund</a></li>
+          <li><a href="/#token">$FATR Token</a></li>
+          <li><a href="/#performance">Performance</a></li>
+          <li><a href="/#roadmap">Roadmap</a></li>
+          <li><a href="/#investment">Invest</a></li>
+          <li><a class="active" href="/dashboard.php">Dashboard</a></li>
         </ul>
-        <i class="bi bi-list mobile-nav-toggle"></i>
-      </nav><!-- .navbar -->
-	</div>
-  </header><!-- End Header -->
+        <button type="button" class="menu-btn" id="menuToggle" aria-label="Toggle navigation">
+          <i class="fas fa-bars" aria-hidden="true"></i>
+        </button>
+      </nav>
+    </div>
+  </header>
 
   <main id="main">
 
@@ -230,16 +231,67 @@
   </main><!-- End #main -->
 
   <!-- ======= Footer ======= -->
-  <footer id="footer">
+  <footer class="atr-footer">
     <div class="container">
-      <div class="copyright">
-        &copy; <?php echo date("Y"); ?> <strong><span>AlgoTradingResearch</span></strong>. All Rights Reserved.<span><a href="privacy.php"> Privacy</a> - <a href="terms.php">T&C</a></span>
+      <div class="footer-content">
+        <div class="footer-logo">
+          <div class="logo">
+            <img src="assets/img/logo.png" alt="AlgoTradingResearch Logo">
+          </div>
+          <p>
+            Leveraging cutting-edge AI and quantitative strategies to deliver exceptional returns through both traditional fund management and innovative blockchain solutions.
+          </p>
+          <p class="footer-contact">
+            hello@algotradingresearch.com
+          </p>
+          <div class="footer-socials">
+            <a href="#" aria-label="Twitter"><i class="fab fa-twitter" aria-hidden="true"></i></a>
+            <a href="#" aria-label="Telegram"><i class="fab fa-telegram" aria-hidden="true"></i></a>
+            <a href="#" aria-label="Discord"><i class="fab fa-discord" aria-hidden="true"></i></a>
+          </div>
+        </div>
+
+        <div class="footer-links">
+          <div>
+            <h3>Navigation</h3>
+            <ul>
+              <li><a href="/#hero">Home</a></li>
+              <li><a href="/#about">The Fund</a></li>
+              <li><a href="/#token">$FATR Token</a></li>
+              <li><a href="/#performance">Performance</a></li>
+              <li><a href="/#roadmap">Roadmap</a></li>
+              <li><a href="/#investment">Invest</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h3>Legal</h3>
+            <ul>
+              <li><a href="privacy.php">Privacy Policy</a></li>
+              <li><a href="terms.php">Terms &amp; Conditions</a></li>
+              <li><a href="disclosures.php">Disclosures</a></li>
+              <li><a href="risks.php">Risk Warning</a></li>
+              <li><a href="token.php">Token Terms</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h3>Resources</h3>
+            <ul>
+              <li><a href="#">Whitepaper</a></li>
+              <li><a href="#">$FATR Tokenomics</a></li>
+              <li><a href="#">Security Audit</a></li>
+              <li><a href="#">FAQ</a></li>
+            </ul>
+          </div>
+        </div>
       </div>
-      <div class="credits">
-       AlgoTradingResearch is not associated with MetaQuotes Software Corp.
+
+      <div class="copyright">
+        &copy; <?php echo date("Y"); ?> AlgoTradingResearch. All rights reserved. | $FATR Token is a product of AlgoTradingResearch.
       </div>
     </div>
-  </footer><!-- End Footer -->
+  </footer>
 
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
@@ -253,6 +305,61 @@
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const menuToggle = document.getElementById('menuToggle');
+      const menu = document.getElementById('atr-menu');
+      const header = document.querySelector('.atr-header');
+
+      const handleHeaderShadow = function () {
+        if (!header) {
+          return;
+        }
+
+        if (window.scrollY > 50) {
+          header.classList.add('scrolled');
+        } else {
+          header.classList.remove('scrolled');
+        }
+      };
+
+      handleHeaderShadow();
+      window.addEventListener('scroll', handleHeaderShadow);
+
+      if (menuToggle && menu) {
+        menuToggle.addEventListener('click', function () {
+          menu.classList.toggle('show');
+          menuToggle.classList.toggle('open');
+
+          const icon = menuToggle.querySelector('i');
+          if (icon) {
+            if (menuToggle.classList.contains('open')) {
+              icon.classList.remove('fa-bars');
+              icon.classList.add('fa-times');
+            } else {
+              icon.classList.add('fa-bars');
+              icon.classList.remove('fa-times');
+            }
+          }
+        });
+
+        menu.querySelectorAll('a').forEach(function (link) {
+          link.addEventListener('click', function () {
+            if (menu.classList.contains('show')) {
+              menu.classList.remove('show');
+              menuToggle.classList.remove('open');
+              const icon = menuToggle.querySelector('i');
+              if (icon) {
+                icon.classList.add('fa-bars');
+                icon.classList.remove('fa-times');
+              }
+            }
+          });
+        });
+      }
+    });
+  </script>
 
   <!-- Dashboard JavaScript -->
   <script src="js/trading-dashboard.js"></script>
