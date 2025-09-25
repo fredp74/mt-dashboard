@@ -23,6 +23,7 @@ MT-DASHBOARD/
 ├── api/                  # PHP backend API
 │   ├── config.php        # DB connection + API key
 │   ├── get_data.php      # Fetch trading data (JSON)
+│   ├── srv_aliases.php   # Map legacy MT5 fields to SRV labels
 │   └── receive_data.php  # Receive POSTed data from MetaTrader
 │
 ├── assets/               # Frontend assets (Bootstrap 5.2.3 + JS/CSS/img/vendor)
