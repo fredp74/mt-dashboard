@@ -95,7 +95,7 @@ class TradingDashboard {
             data: {
                 labels: [],
                 datasets: [
-                    {
+/*                    {
                         label: 'MT4 Balance',
                         data: [],
                         borderColor: '#11998e',
@@ -117,7 +117,7 @@ class TradingDashboard {
                         pointRadius: 3,
                         pointHoverRadius: 6,
                         borderDash: [5, 5]
-                    },
+                    },*/
                     {
                         label: 'MT5 Balance',
                         data: [],
@@ -329,17 +329,18 @@ class TradingDashboard {
             profitElement.className = current.total_profit >= 0 ? 'profit-positive' : 'profit-negative';
         }, 500);
 
-        // Update MT4 data
+/*        // Update MT4 data
         if (current.mt4) {
             this.animateNumber('mt4-balance', current.mt4.balance);
             this.animateNumber('mt4-equity', current.mt4.equity);
             this.animateNumber('mt4-profit', current.mt4.profit);
             this.animateNumber('mt4-margin', current.mt4.margin || 0);
             this.animateNumber('mt4-free-margin', current.mt4.free_margin || 0);
-            
+
             const positionsEl = document.getElementById('mt4-positions');
             if (positionsEl) positionsEl.textContent = current.mt4.open_positions || 0;
         }
+*/
 
         // Update MT5 data
         if (current.mt5) {
@@ -388,8 +389,9 @@ class TradingDashboard {
         // Process data for charts
         const timeLabels = [];
         const profitData = [];
-        const mt4BalanceData = [];
+/*        const mt4BalanceData = [];
         const mt4EquityData = [];
+*/
         const mt5BalanceData = [];
         const mt5EquityData = [];
 
@@ -426,12 +428,17 @@ class TradingDashboard {
             timeLabels.push(timeLabel);
             
             // Calculate total profit
-            const totalProfit = (data.mt4.profit || 0) + (data.mt5.profit || 0);
+/*            const totalProfit = (data.mt4.profit || 0) + (data.mt5.profit || 0);
             profitData.push(totalProfit);
-            
+
             // Individual account data
             mt4BalanceData.push(data.mt4.balance || null);
             mt4EquityData.push(data.mt4.equity || null);
+*/
+            const totalProfit = (data.mt5.profit || 0);
+            profitData.push(totalProfit);
+
+            // Individual account data
             mt5BalanceData.push(data.mt5.balance || null);
             mt5EquityData.push(data.mt5.equity || null);
         });
@@ -459,25 +466,21 @@ class TradingDashboard {
 
         // Update balance chart
         this.balanceChart.data.labels = timeLabels;
-        this.balanceChart.data.datasets[0].data = mt4BalanceData;
+/*        this.balanceChart.data.datasets[0].data = mt4BalanceData;
         this.balanceChart.data.datasets[1].data = mt4EquityData;
-        this.balanceChart.data.datasets[2].data = mt5BalanceData;
-        this.balanceChart.data.datasets[3].data = mt5EquityData;
+*/
+        this.balanceChart.data.datasets[0].data = mt5BalanceData;
+        this.balanceChart.data.datasets[1].data = mt5EquityData;
         this.balanceChart.update('none');
     }
 
     updateConnectionStatus(isOnline) {
-        const mt4Status = document.getElementById('mt4-status');
         const mt5Status = document.getElementById('mt5-status');
-        
+
         if (isOnline) {
-            mt4Status.textContent = 'MT4: Online';
-            mt4Status.className = 'badge status-online me-2';
             mt5Status.textContent = 'MT5: Online';
             mt5Status.className = 'badge status-online me-2';
         } else {
-            mt4Status.textContent = 'MT4: Offline';
-            mt4Status.className = 'badge status-offline me-2';
             mt5Status.textContent = 'MT5: Offline';
             mt5Status.className = 'badge status-offline me-2';
         }
