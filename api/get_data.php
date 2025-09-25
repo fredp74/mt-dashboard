@@ -156,10 +156,14 @@ function calculateDrawdown($conn, $timeRange) {
 $drawdownData = calculateDrawdown($conn, $timeRange);
 
 // Calculate totals
-$totalBalance = ($currentData['MT4']['balance'] ?? 0) + ($currentData['MT5']['balance'] ?? 0);
+/* $totalBalance = ($currentData['MT4']['balance'] ?? 0) + ($currentData['MT5']['balance'] ?? 0);
 $totalEquity = ($currentData['MT4']['equity'] ?? 0) + ($currentData['MT5']['equity'] ?? 0);
 $totalProfit = ($currentData['MT4']['profit'] ?? 0) + ($currentData['MT5']['profit'] ?? 0);
-$totalPositions = ($currentData['MT4']['open_positions'] ?? 0) + ($currentData['MT5']['open_positions'] ?? 0);
+$totalPositions = ($currentData['MT4']['open_positions'] ?? 0) + ($currentData['MT5']['open_positions'] ?? 0); */
+$totalBalance = $currentData['MT5']['balance'] ?? 0;
+$totalEquity = $currentData['MT5']['equity'] ?? 0;
+$totalProfit = $currentData['MT5']['profit'] ?? 0;
+$totalPositions = $currentData['MT5']['open_positions'] ?? 0;
 
 // Calculate performance metrics
 $startBalance = 0;
@@ -168,15 +172,16 @@ $performancePercent = 0;
 
 if (count($historyData) > 0) {
     // Get initial balance from history
-    $firstMT4 = array_values(array_filter($historyData, function($item) { 
-        return $item['account_type'] === 'MT4'; 
+/*    $firstMT4 = array_values(array_filter($historyData, function($item) {
+        return $item['account_type'] === 'MT4';
+    }))[0] ?? null; */
+
+    $firstMT5 = array_values(array_filter($historyData, function($item) {
+        return $item['account_type'] === 'MT5';
     }))[0] ?? null;
-    
-    $firstMT5 = array_values(array_filter($historyData, function($item) { 
-        return $item['account_type'] === 'MT5'; 
-    }))[0] ?? null;
-    
-    $startBalance = ($firstMT4['balance'] ?? 0) + ($firstMT5['balance'] ?? 0);
+
+/*    $startBalance = ($firstMT4['balance'] ?? 0) + ($firstMT5['balance'] ?? 0); */
+    $startBalance = $firstMT5['balance'] ?? 0;
     
     if ($startBalance > 0) {
         $performancePercent = (($currentBalance - $startBalance) / $startBalance) * 100;
@@ -190,14 +195,14 @@ $response = [
         'total_profit' => round($totalProfit, 2),
         'total_positions' => $totalPositions,
         'performance_percent' => round($performancePercent, 2),
-        'mt4' => $currentData['MT4'] ?? [
+/*        'mt4' => $currentData['MT4'] ?? [
             'balance' => 0,
             'equity' => 0,
             'profit' => 0,
             'margin' => 0,
             'free_margin' => 0,
             'open_positions' => 0
-        ],
+        ], */
         'mt5' => $currentData['MT5'] ?? [
             'balance' => 0,
             'equity' => 0,
