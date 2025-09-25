@@ -35,8 +35,8 @@ switch ($period) {
         $groupBy = 'MINUTE(timestamp) DIV 15';
 }
 
-// Get current data (latest entry for each account type)
-$currentQuery = "SELECT 
+// Get latest MT5 account snapshot
+$currentQuery = "SELECT
     account_type,
     balance,
     equity,
@@ -46,10 +46,10 @@ $currentQuery = "SELECT
     open_positions,
     total_volume,
     timestamp
-FROM trading_history 
-WHERE id IN (
-    SELECT MAX(id) FROM trading_history GROUP BY account_type
-)";
+FROM trading_history
+WHERE account_type = 'MT5'
+ORDER BY id DESC
+LIMIT 1";
 
 $currentResult = $conn->query($currentQuery);
 if ($currentResult === false) {
@@ -58,8 +58,8 @@ if ($currentResult === false) {
     exit;
 }
 $currentData = [];
-while ($row = $currentResult->fetch_assoc()) {
-    $currentData[$row['account_type']] = $row;
+if ($row = $currentResult->fetch_assoc()) {
+    $currentData['MT5'] = $row;
 }
 
 // Get historical data for charts
@@ -70,8 +70,8 @@ $historyQuery = "SELECT
     AVG(equity) as equity,
     AVG(profit) as profit,
     timestamp
-FROM trading_history 
-WHERE timestamp >= $timeRange 
+FROM trading_history
+WHERE timestamp >= $timeRange AND account_type = 'MT5'
 GROUP BY time_group, account_type
 ORDER BY time_group ASC";
 
@@ -95,11 +95,11 @@ while ($row = $historyResult->fetch_assoc()) {
 // Calculate maximum drawdown for the selected period
 function calculateDrawdown($conn, $timeRange) {
     // Get equity values over time for both accounts
-    $equityQuery = "SELECT 
+    $equityQuery = "SELECT
         timestamp,
         SUM(equity) as total_equity
-    FROM trading_history 
-    WHERE timestamp >= $timeRange 
+    FROM trading_history
+    WHERE timestamp >= $timeRange AND account_type = 'MT5'
     GROUP BY timestamp
     ORDER BY timestamp ASC";
     
@@ -155,11 +155,11 @@ function calculateDrawdown($conn, $timeRange) {
 
 $drawdownData = calculateDrawdown($conn, $timeRange);
 
-// Calculate totals
-$totalBalance = ($currentData['MT4']['balance'] ?? 0) + ($currentData['MT5']['balance'] ?? 0);
-$totalEquity = ($currentData['MT4']['equity'] ?? 0) + ($currentData['MT5']['equity'] ?? 0);
-$totalProfit = ($currentData['MT4']['profit'] ?? 0) + ($currentData['MT5']['profit'] ?? 0);
-$totalPositions = ($currentData['MT4']['open_positions'] ?? 0) + ($currentData['MT5']['open_positions'] ?? 0);
+// Calculate totals (MT5 only)
+$totalBalance = $currentData['MT5']['balance'] ?? 0;
+$totalEquity = $currentData['MT5']['equity'] ?? 0;
+$totalProfit = $currentData['MT5']['profit'] ?? 0;
+$totalPositions = $currentData['MT5']['open_positions'] ?? 0;
 
 // Calculate performance metrics
 $startBalance = 0;
@@ -167,17 +167,12 @@ $currentBalance = $totalBalance;
 $performancePercent = 0;
 
 if (count($historyData) > 0) {
-    // Get initial balance from history
-    $firstMT4 = array_values(array_filter($historyData, function($item) { 
-        return $item['account_type'] === 'MT4'; 
+    $firstMT5 = array_values(array_filter($historyData, function($item) {
+        return $item['account_type'] === 'MT5';
     }))[0] ?? null;
-    
-    $firstMT5 = array_values(array_filter($historyData, function($item) { 
-        return $item['account_type'] === 'MT5'; 
-    }))[0] ?? null;
-    
-    $startBalance = ($firstMT4['balance'] ?? 0) + ($firstMT5['balance'] ?? 0);
-    
+
+    $startBalance = $firstMT5['balance'] ?? 0;
+
     if ($startBalance > 0) {
         $performancePercent = (($currentBalance - $startBalance) / $startBalance) * 100;
     }
@@ -190,14 +185,6 @@ $response = [
         'total_profit' => round($totalProfit, 2),
         'total_positions' => $totalPositions,
         'performance_percent' => round($performancePercent, 2),
-        'mt4' => $currentData['MT4'] ?? [
-            'balance' => 0,
-            'equity' => 0,
-            'profit' => 0,
-            'margin' => 0,
-            'free_margin' => 0,
-            'open_positions' => 0
-        ],
         'mt5' => $currentData['MT5'] ?? [
             'balance' => 0,
             'equity' => 0,

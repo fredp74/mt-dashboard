@@ -7,7 +7,7 @@
 
   <title>Live Trading Dashboard - AlgoTradingResearch - Maximize Your Profits with HFT</title>
   <meta content="Real-time trading results and performance analytics for our Expert Advisors" name="description">
-  <meta content="trading dashboard, MT4, MT5, forex trading, algorithmic trading, HFT" name="keywords">
+  <meta content="trading dashboard, MT5, forex trading, algorithmic trading, HFT" name="keywords">
 
   <!-- Favicons -->
   <link href="assets/img/favicon.png" rel="icon">
@@ -79,7 +79,6 @@
         <div class="dashboard-header" data-aos="fade-up">
           <h2>Real-Time Trading Performance</h2>
           <div class="status-indicator">
-<?php /*            <span class="badge status-online" id="mt4-status">MT4: Online</span> */?>
             <span class="badge status-online" id="mt5-status">MT5: Online</span>
           </div>
           <div class="last-update">
@@ -147,42 +146,6 @@
 
         <!-- Account Details -->
         <div class="account-grid" data-aos="fade-up" data-aos-delay="400">
-<?php /*
-          <div class="dashboard-card account-card">
-            <div class="dashboard-card-header">
-              <i class="bi bi-pc-display"></i>
-              <h5>MT4 Account Details</h5>
-            </div>
-            <div class="dashboard-card-body">
-              <div class="account-details">
-                <div class="account-detail">
-                  <span class="label">Balance</span>
-                  <span class="value">$<span id="mt4-balance">0.00</span></span>
-                </div>
-                <div class="account-detail">
-                  <span class="label">Equity</span>
-                  <span class="value">$<span id="mt4-equity">0.00</span></span>
-                </div>
-                <div class="account-detail">
-                  <span class="label">Positions</span>
-                  <span class="value"><span id="mt4-positions">0</span></span>
-                </div>
-                <div class="account-detail">
-                  <span class="label">Profit</span>
-                  <span class="value">$<span id="mt4-profit">0.00</span></span>
-                </div>
-                <div class="account-detail">
-                  <span class="label">Margin</span>
-                  <span class="value">$<span id="mt4-margin">0.00</span></span>
-                </div>
-                <div class="account-detail">
-                  <span class="label">Free Margin</span>
-                  <span class="value">$<span id="mt4-free-margin">0.00</span></span>
-                </div>
-              </div>
-            </div>
-          </div>
-*/?>
           <div class="dashboard-card account-card">
             <div class="dashboard-card-header">
               <i class="bi bi-laptop"></i>

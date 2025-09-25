@@ -61,7 +61,6 @@ if (!$data) {
 
 // Validate required fields and data types
 $required_fields = [
-    'account_type' => 'string',
     'balance' => 'numeric',
     'equity' => 'numeric',
     'profit' => 'numeric'
@@ -81,11 +80,14 @@ foreach ($required_fields as $field => $type) {
     }
 }
 
-// Sanitize and validate account type
-if (!in_array($data['account_type'], ['MT4', 'MT5'])) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Invalid account type']);
-    exit;
+$accountType = 'MT5';
+if (isset($data['account_type'])) {
+    $normalizedType = strtoupper(trim($data['account_type']));
+    if ($normalizedType !== 'MT5') {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid account type']);
+        exit;
+    }
 }
 
 // Get database connection
@@ -106,8 +108,8 @@ $free_margin = floatval($data['free_margin'] ?? 0);
 $open_positions = intval($data['open_positions'] ?? 0);
 $total_volume = floatval($data['total_volume'] ?? 0);
 
-$stmt->bind_param("sdddddid", 
-    $data['account_type'],
+$stmt->bind_param("sdddddid",
+    $accountType,
     floatval($data['balance']),
     floatval($data['equity']),
     floatval($data['profit']),
@@ -122,7 +124,7 @@ if ($stmt->execute()) {
         'status' => 'success',
         'message' => 'Data received and stored',
         'timestamp' => date('Y-m-d H:i:s'),
-        'account_type' => $data['account_type']
+        'account_type' => $accountType
     ];
     
     logAPICall('receive_data', $data, $response);
