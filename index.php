@@ -79,7 +79,7 @@
         <div class="dashboard-header" data-aos="fade-up">
           <h2>Real-Time Trading Performance</h2>
           <div class="status-indicator">
-<?php /*            <span class="badge status-online" id="mt4-status">MT4: Online</span> */?>
+            <!-- <span class="badge status-online" id="mt4-status">MT4: Online</span> -->
             <span class="badge status-offline" id="mt5-status">MT5: Offline</span>
           </div>
           <div class="last-update">
@@ -147,7 +147,7 @@
 
         <!-- Account Details -->
         <div class="account-grid" data-aos="fade-up" data-aos-delay="400">
-<?php /*
+        <!--
           <div class="dashboard-card account-card">
             <div class="dashboard-card-header">
               <i class="bi bi-pc-display"></i>
@@ -182,7 +182,7 @@
               </div>
             </div>
           </div>
-*/?>
+        -->
           <div class="dashboard-card account-card">
             <div class="dashboard-card-header">
               <i class="bi bi-laptop"></i>
