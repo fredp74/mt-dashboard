@@ -238,32 +238,44 @@ class TradingDashboard {
     async fetchData() {
         try {
             const response = await fetch(`api/get_data.php?period=${this.currentPeriod}`);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
             const data = await response.json();
-            
+
             if (data.error) {
                 console.error('API Error:', data.error);
                 this.updateConnectionStatus(false);
                 this.showErrorMessage('Failed to fetch data from server');
+                this.updateCurrentStats({}, false);
+                this.updateDrawdown(null, false);
                 return;
             }
 
-            this.updateConnectionStatus(true);
-            this.updateCurrentStats(data.current);
-            
-            if (data.history) {
+            const current = data.current || {};
+            const isOnline = Boolean(current.is_online);
+
+            this.updateConnectionStatus(isOnline);
+            this.updateCurrentStats(current, isOnline);
+
+            if (Array.isArray(data.history) && data.history.length > 0) {
                 this.updateCharts(data.history);
             }
-            
-            if (data.drawdown) {
-                this.updateDrawdown(data.drawdown);
-            }
 
-            this.hideLoadingIndicator();
-            
+            this.updateDrawdown(data.drawdown || null, isOnline);
+
+            if (!isOnline) {
+                console.warn('SRV is offline - awaiting live data.');
+            }
         } catch (error) {
             console.error('Fetch error:', error);
             this.updateConnectionStatus(false);
             this.showErrorMessage('Network connection error');
+            this.updateCurrentStats({}, false);
+            this.updateDrawdown(null, false);
+        } finally {
             this.hideLoadingIndicator();
         }
     }
@@ -293,49 +305,84 @@ class TradingDashboard {
         bsToast.show();
     }
 
-    updateCurrentStats(current) {
+    updateCurrentStats(current, isOnline) {
+        const totals = current || {};
+
         // Update totals with enhanced animations
-        this.animateNumber('total-balance', current.total_balance, true);
-        this.animateNumber('total-equity', current.total_equity, true);
-        
+        this.animateNumber('total-balance', totals.total_balance ?? 0, true);
+        this.animateNumber('total-equity', totals.total_equity ?? 0, true);
+
         const profitElement = document.getElementById('total-profit');
-        this.animateNumber('total-profit', current.total_profit, true);
-        
-        // Update profit color with animation
-        setTimeout(() => {
-            profitElement.className = current.total_profit >= 0 ? 'profit-positive' : 'profit-negative';
-        }, 500);
+        this.animateNumber('total-profit', totals.total_profit ?? 0, true);
+
+        if (profitElement) {
+            setTimeout(() => {
+                profitElement.className = (totals.total_profit ?? 0) >= 0 ? 'profit-positive' : 'profit-negative';
+            }, 500);
+        }
 
         // Update SRV data (falls back to legacy payload structure for compatibility)
-        const srvData = current.srv || current.mt5;
+        const srvData = totals.srv || totals.mt5;
         if (srvData) {
-            this.animateNumber('srv-balance', srvData.balance);
-            this.animateNumber('srv-equity', srvData.equity);
-            this.animateNumber('srv-profit', srvData.profit);
-            this.animateNumber('srv-margin', srvData.margin || 0);
-            this.animateNumber('srv-free-margin', srvData.free_margin || 0);
+            this.animateNumber('srv-balance', srvData.balance ?? 0);
+            this.animateNumber('srv-equity', srvData.equity ?? 0);
+            this.animateNumber('srv-profit', srvData.profit ?? 0);
+            this.animateNumber('srv-margin', srvData.margin ?? 0);
+            this.animateNumber('srv-free-margin', srvData.free_margin ?? 0);
 
             const positionsEl = document.getElementById('srv-positions');
-            if (positionsEl) positionsEl.textContent = srvData.open_positions || 0;
+            if (positionsEl) {
+                positionsEl.textContent = srvData.open_positions ?? 0;
+            }
+        } else {
+            this.animateNumber('srv-balance', 0);
+            this.animateNumber('srv-equity', 0);
+            this.animateNumber('srv-profit', 0);
+            this.animateNumber('srv-margin', 0);
+            this.animateNumber('srv-free-margin', 0);
+
+            const positionsEl = document.getElementById('srv-positions');
+            if (positionsEl) {
+                positionsEl.textContent = 0;
+            }
         }
 
         // Update last update time
         const lastUpdate = document.getElementById('last-update');
         if (lastUpdate) {
-            lastUpdate.textContent = new Date(current.last_update).toLocaleString();
+            const rawTimestamp = totals.last_update;
+
+            if (rawTimestamp) {
+                const parsedTimestamp = new Date(rawTimestamp);
+                if (!Number.isNaN(parsedTimestamp.getTime())) {
+                    lastUpdate.textContent = parsedTimestamp.toLocaleString();
+                } else {
+                    lastUpdate.textContent = rawTimestamp;
+                }
+            } else {
+                lastUpdate.textContent = '--';
+            }
+
+            lastUpdate.classList.toggle('text-warning', !isOnline);
         }
     }
 
-    updateDrawdown(drawdown) {
+    updateDrawdown(drawdown, isOnline) {
         const maxDrawdownElement = document.getElementById('max-drawdown');
         if (!maxDrawdownElement) return;
-        
-        const drawdownValue = Math.abs(drawdown.max_drawdown);
+
+        if (!drawdown || !isOnline) {
+            maxDrawdownElement.textContent = '--';
+            maxDrawdownElement.style.color = '';
+            return;
+        }
+
+        const drawdownValue = Math.abs(drawdown.max_drawdown ?? 0);
         maxDrawdownElement.textContent = `${drawdownValue.toFixed(2)}%`;
-        
+
         // Enhanced color coding with smooth transitions
         maxDrawdownElement.style.transition = 'color 0.5s ease';
-        
+
         if (drawdownValue > 20) {
             maxDrawdownElement.style.color = '#dc3545'; // Red for high drawdown
         } else if (drawdownValue > 10) {
@@ -433,13 +480,11 @@ class TradingDashboard {
             return;
         }
 
-        if (isOnline) {
-            srvStatus.textContent = 'SRV: Online';
-            srvStatus.className = 'badge status-online me-2';
-        } else {
-            srvStatus.textContent = 'SRV: Offline';
-            srvStatus.className = 'badge status-offline me-2';
-        }
+        srvStatus.textContent = isOnline ? 'SRV: Online' : 'SRV: Offline';
+        srvStatus.classList.add('badge');
+        srvStatus.classList.remove('status-online', 'status-offline');
+        srvStatus.classList.add(isOnline ? 'status-online' : 'status-offline');
+        srvStatus.setAttribute('data-status', isOnline ? 'online' : 'offline');
     }
 
     startRealTimeUpdates() {
@@ -459,18 +504,23 @@ class TradingDashboard {
     animateNumber(elementId, targetValue, isCurrency = false) {
         const element = document.getElementById(elementId);
         if (!element) return;
-        
+
+        let sanitizedTarget = typeof targetValue === 'number' ? targetValue : parseFloat(targetValue);
+        if (!Number.isFinite(sanitizedTarget)) {
+            sanitizedTarget = 0;
+        }
+
         const currentValue = parseFloat(element.textContent.replace(/[$,]/g, '')) || 0;
-        const increment = (targetValue - currentValue) / 30; // 30 steps for smoother animation
+        const increment = (sanitizedTarget - currentValue) / 30; // 30 steps for smoother animation
         let currentStep = 0;
-        
+
         const timer = setInterval(() => {
             currentStep++;
             // Easing function for smooth animation
             const progress = currentStep / 30;
             const easedProgress = 1 - Math.pow(1 - progress, 3); // Ease out cubic
             const newValue = currentValue + (increment * currentStep);
-            
+
             if (isCurrency) {
                 element.textContent = this.formatCurrency(newValue);
             } else {
@@ -481,9 +531,9 @@ class TradingDashboard {
                 clearInterval(timer);
                 // Set final value to ensure accuracy
                 if (isCurrency) {
-                    element.textContent = this.formatCurrency(targetValue);
+                    element.textContent = this.formatCurrency(sanitizedTarget);
                 } else {
-                    element.textContent = this.formatNumber(targetValue);
+                    element.textContent = this.formatNumber(sanitizedTarget);
                 }
             }
         }, 33); // ~30fps animation
