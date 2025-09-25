@@ -96,7 +96,7 @@ class TradingDashboard {
                 labels: [],
                 datasets: [
                     {
-                        label: 'MT5 Balance',
+                        label: 'SRV Balance',
                         data: [],
                         borderColor: '#667eea',
                         backgroundColor: 'rgba(102, 126, 234, 0.1)',
@@ -107,7 +107,7 @@ class TradingDashboard {
                         pointHoverRadius: 6
                     },
                     {
-                        label: 'MT5 Equity',
+                        label: 'SRV Equity',
                         data: [],
                         borderColor: '#764ba2',
                         backgroundColor: 'rgba(118, 75, 162, 0.1)',
@@ -306,16 +306,17 @@ class TradingDashboard {
             profitElement.className = current.total_profit >= 0 ? 'profit-positive' : 'profit-negative';
         }, 500);
 
-        // Update MT5 data
-        if (current.mt5) {
-            this.animateNumber('mt5-balance', current.mt5.balance);
-            this.animateNumber('mt5-equity', current.mt5.equity);
-            this.animateNumber('mt5-profit', current.mt5.profit);
-            this.animateNumber('mt5-margin', current.mt5.margin || 0);
-            this.animateNumber('mt5-free-margin', current.mt5.free_margin || 0);
-            
-            const positionsEl = document.getElementById('mt5-positions');
-            if (positionsEl) positionsEl.textContent = current.mt5.open_positions || 0;
+        // Update SRV data (falls back to legacy payload structure for compatibility)
+        const srvData = current.srv || current.mt5;
+        if (srvData) {
+            this.animateNumber('srv-balance', srvData.balance);
+            this.animateNumber('srv-equity', srvData.equity);
+            this.animateNumber('srv-profit', srvData.profit);
+            this.animateNumber('srv-margin', srvData.margin || 0);
+            this.animateNumber('srv-free-margin', srvData.free_margin || 0);
+
+            const positionsEl = document.getElementById('srv-positions');
+            if (positionsEl) positionsEl.textContent = srvData.open_positions || 0;
         }
 
         // Update last update time
@@ -353,19 +354,21 @@ class TradingDashboard {
         // Process data for charts
         const timeLabels = [];
         const profitData = [];
-        const mt5BalanceData = [];
-        const mt5EquityData = [];
+        const srvBalanceData = [];
+        const srvEquityData = [];
 
         // Group data by timestamp
         const groupedData = {};
         historyData.forEach(row => {
             const timestamp = new Date(row.timestamp).toISOString();
             if (!groupedData[timestamp]) {
-                groupedData[timestamp] = { mt5: {} };
+                groupedData[timestamp] = { srv: {}, legacy: {} };
             }
 
-            if (row.account_type === 'MT5') {
-                groupedData[timestamp].mt5 = row;
+            if (row.account_type === 'SRV') {
+                groupedData[timestamp].srv = row;
+            } else if (row.account_type === 'MT5') {
+                groupedData[timestamp].legacy = row;
             }
         });
 
@@ -386,12 +389,13 @@ class TradingDashboard {
             
             timeLabels.push(timeLabel);
             
-            const totalProfit = data.mt5.profit || 0;
+            const accountSnapshot = Object.keys(data.srv || {}).length ? data.srv : data.legacy || {};
+            const totalProfit = accountSnapshot.profit || 0;
             profitData.push(totalProfit);
 
             // Individual account data
-            mt5BalanceData.push(data.mt5.balance || null);
-            mt5EquityData.push(data.mt5.equity || null);
+            srvBalanceData.push(accountSnapshot.balance || null);
+            srvEquityData.push(accountSnapshot.equity || null);
         });
 
         // Update profit chart with enhanced visuals
@@ -417,20 +421,24 @@ class TradingDashboard {
 
         // Update balance chart
         this.balanceChart.data.labels = timeLabels;
-        this.balanceChart.data.datasets[0].data = mt5BalanceData;
-        this.balanceChart.data.datasets[1].data = mt5EquityData;
+        this.balanceChart.data.datasets[0].data = srvBalanceData;
+        this.balanceChart.data.datasets[1].data = srvEquityData;
         this.balanceChart.update('none');
     }
 
     updateConnectionStatus(isOnline) {
-        const mt5Status = document.getElementById('mt5-status');
+        const srvStatus = document.getElementById('srv-status');
+
+        if (!srvStatus) {
+            return;
+        }
 
         if (isOnline) {
-            mt5Status.textContent = 'MT5: Online';
-            mt5Status.className = 'badge status-online me-2';
+            srvStatus.textContent = 'SRV: Online';
+            srvStatus.className = 'badge status-online me-2';
         } else {
-            mt5Status.textContent = 'MT5: Offline';
-            mt5Status.className = 'badge status-offline me-2';
+            srvStatus.textContent = 'SRV: Offline';
+            srvStatus.className = 'badge status-offline me-2';
         }
     }
 
