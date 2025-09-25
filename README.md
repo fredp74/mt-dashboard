@@ -1,7 +1,7 @@
 # 📊 MT-Dashboard
 
-A lightweight PHP + MariaDB dashboard for visualizing trading data exported from **MetaTrader 4/5**.  
-Includes exporters (`.mq4` / `.mq5`) that push trading activity to a backend API, which feeds a responsive Bootstrap-based frontend.
+A lightweight PHP + MariaDB dashboard for visualizing trading data exported from **MetaTrader 5**.
+Includes an exporter (`.mq5`) that pushes trading activity to a backend API, which feeds a responsive Bootstrap-based frontend.
 
 ---
 
@@ -9,7 +9,7 @@ Includes exporters (`.mq4` / `.mq5`) that push trading activity to a backend API
 
 **MT-Dashboard** provides:
 
-- 📡 **MetaTrader Integration**: MT4/MT5 Expert Advisors export live account + trading data.  
+- 📡 **MetaTrader Integration**: MT5 Expert Advisors export live account + trading data.
 - 🗄️ **Backend API**: PHP endpoints (`/api/`) receive, log, and insert trading data into MariaDB.  
 - 📊 **Frontend Dashboard**: PHP + JS dashboard for charts, balances, and trade history.  
 - 🛠️ **Bootstrap 5.2.3** styling for a clean, responsive UI.  
@@ -37,8 +37,7 @@ MT-DASHBOARD/
 ├── logs/
 │   └── api.log           # API log for debugging incoming requests
 │
-├── mql/                  # MetaTrader Exporters
-│   ├── TradingDataExporter.mq4
+├── mql/                  # MetaTrader Exporter
 │   └── TradingDataExporter.mq5
 │
 ├── index.php             # Dashboard homepage
@@ -51,9 +50,9 @@ MT-DASHBOARD/
 
 ## 📡 MetaTrader Integration
 
-The system relies on **MT4/MT5 data exporters** (`.mq4` / `.mq5`) that push trading data from the trading terminal into the backend (`MariaDB` via PHP API).
+The system relies on an **MT5 data exporter** (`.mq5`) that pushes trading data from the trading terminal into the backend (`MariaDB` via PHP API).
 
-### 🔧 Exporter Parameters (MT5 example: `TradingDataExporter.mq5`)
+### 🔧 Exporter Parameters (`TradingDataExporter.mq5`)
 
 ```mql5
 #property version   "1.00"
@@ -69,9 +68,7 @@ input string ExportFileName = "mt5_data.json";     // File name for local export
 
 ### ⚙️ Setup Instructions
 
-1. Copy `TradingDataExporter.mq4` or `TradingDataExporter.mq5` into your **MetaTrader terminal**:
-   - MT4 → `MQL4/Experts/`
-   - MT5 → `MQL5/Experts/`
+1. Copy `TradingDataExporter.mq5` into your **MetaTrader 5 terminal** (`MQL5/Experts/`).
 2. Restart MetaTrader, then **attach the Expert Advisor** to any chart.
 3. In **MetaTrader → Tools → Options → Expert Advisors**:
    - ✅ Check **Allow WebRequest for listed URL**.
@@ -92,7 +89,7 @@ input string ExportFileName = "mt5_data.json";     // File name for local export
 ## ⚙️ Backend API
 
 - `api/config.php` → Database credentials + API key validation.  
-- `api/receive_data.php` → Receives POSTed JSON data from MT4/MT5 exporters, validates API key, stores into DB.  
+- `api/receive_data.php` → Receives POSTed JSON data from MT5 exporters, validates API key, stores into DB.
 - `api/get_data.php` → Returns stored trading/account data as JSON for frontend use.  
 - `logs/api.log` → Logs requests, errors, and system activity.  
 
@@ -149,7 +146,7 @@ CREATE TABLE trades (
    ```
 2. Configure database in `api/config.php`.  
 3. Import schema from `mysql.txt`.  
-4. Compile `TradingDataExporter.mq4` or `.mq5` with your MetaTrader editor and deploy the ex4/ex5 into your terminal.  
+4. Compile `TradingDataExporter.mq5` with your MetaTrader editor and deploy the ex5 into your terminal.
 5. Start dashboard:
    ```
    http://localhost/mt-dashboard/
@@ -161,7 +158,7 @@ CREATE TABLE trades (
 
 ✅ API + logging functional  
 ✅ Dashboard frontend with Bootstrap 5.2.3  
-✅ MT4/MT5 exporters included  
+✅ MT5 exporter included
 🚧 To improve: Chart.js visualizations, error handling, user auth  
 
 ---
