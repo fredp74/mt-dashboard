@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/srv_aliases.php';
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -62,6 +63,8 @@ if ($row = $currentResult->fetch_assoc()) {
     $currentData['MT5'] = $row;
 }
 
+$srvSnapshot = mapMt5SnapshotToSrv($currentData['MT5'] ?? []);
+
 // Get historical data for charts
 $historyQuery = "SELECT
     DATE_FORMAT(timestamp, '%Y-%m-%d %H:%i:00') as time_group,
@@ -85,7 +88,7 @@ $historyData = [];
 while ($row = $historyResult->fetch_assoc()) {
     $historyData[] = [
         'timestamp' => $row['time_group'],
-        'account_type' => $row['account_type'],
+        'account_type' => 'SRV',
         'balance' => round(floatval($row['balance']), 2),
         'equity' => round(floatval($row['equity']), 2),
         'profit' => round(floatval($row['profit']), 2)
@@ -167,11 +170,11 @@ $currentBalance = $totalBalance;
 $performancePercent = 0;
 
 if (count($historyData) > 0) {
-    $firstMT5 = array_values(array_filter($historyData, function($item) {
-        return $item['account_type'] === 'MT5';
+    $firstSnapshot = array_values(array_filter($historyData, function($item) {
+        return in_array($item['account_type'], ['SRV', 'MT5'], true);
     }))[0] ?? null;
 
-    $startBalance = $firstMT5['balance'] ?? 0;
+    $startBalance = $firstSnapshot['balance'] ?? 0;
 
     if ($startBalance > 0) {
         $performancePercent = (($currentBalance - $startBalance) / $startBalance) * 100;
@@ -193,6 +196,7 @@ $response = [
             'free_margin' => 0,
             'open_positions' => 0
         ],
+        'srv' => $srvSnapshot,
         'last_update' => date('Y-m-d H:i:s')
     ],
     'history' => $historyData,

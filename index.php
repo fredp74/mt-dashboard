@@ -7,7 +7,7 @@
 
   <title>Live Trading Dashboard - AlgoTradingResearch - Maximize Your Profits with HFT</title>
   <meta content="Real-time trading results and performance analytics for our Expert Advisors" name="description">
-  <meta content="trading dashboard, MT5, forex trading, algorithmic trading, HFT" name="keywords">
+  <meta content="trading dashboard, SRV, forex trading, algorithmic trading, HFT" name="keywords">
 
   <!-- Favicons -->
   <link href="assets/img/favicon.png" rel="icon">
@@ -79,7 +79,7 @@
         <div class="dashboard-header" data-aos="fade-up">
           <h2>Real-Time Trading Performance</h2>
           <div class="status-indicator">
-            <span class="badge status-online" id="mt5-status">MT5: Online</span>
+            <span class="badge status-online" id="srv-status">SRV: Online</span>
           </div>
           <div class="last-update">
             Last Update: <span id="last-update">--</span>
@@ -149,33 +149,33 @@
           <div class="dashboard-card account-card">
             <div class="dashboard-card-header">
               <i class="bi bi-laptop"></i>
-              <h5>MT5 Account Details</h5>
+              <h5>SRV Account Details</h5>
             </div>
             <div class="dashboard-card-body">
               <div class="account-details">
                 <div class="account-detail">
                   <span class="label">Balance</span>
-                  <span class="value">$<span id="mt5-balance">0.00</span></span>
+                  <span class="value">$<span id="srv-balance">0.00</span></span>
                 </div>
                 <div class="account-detail">
                   <span class="label">Equity</span>
-                  <span class="value">$<span id="mt5-equity">0.00</span></span>
+                  <span class="value">$<span id="srv-equity">0.00</span></span>
                 </div>
                 <div class="account-detail">
                   <span class="label">Positions</span>
-                  <span class="value"><span id="mt5-positions">0</span></span>
+                  <span class="value"><span id="srv-positions">0</span></span>
                 </div>
                 <div class="account-detail">
                   <span class="label">Profit</span>
-                  <span class="value">$<span id="mt5-profit">0.00</span></span>
+                  <span class="value">$<span id="srv-profit">0.00</span></span>
                 </div>
                 <div class="account-detail">
                   <span class="label">Margin</span>
-                  <span class="value">$<span id="mt5-margin">0.00</span></span>
+                  <span class="value">$<span id="srv-margin">0.00</span></span>
                 </div>
                 <div class="account-detail">
                   <span class="label">Free Margin</span>
-                  <span class="value">$<span id="mt5-free-margin">0.00</span></span>
+                  <span class="value">$<span id="srv-free-margin">0.00</span></span>
                 </div>
               </div>
             </div>
