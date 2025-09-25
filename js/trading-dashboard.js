@@ -399,13 +399,21 @@ class TradingDashboard {
         const groupedData = {};
         historyData.forEach(row => {
             const timestamp = new Date(row.timestamp).toISOString();
-            if (!groupedData[timestamp]) {
+            /* if (!groupedData[timestamp]) {
                 groupedData[timestamp] = { mt4: {}, mt5: {} };
+
+                if (row.account_type === 'MT4') {
+                    groupedData[timestamp].mt4 = row;
+                } else if (row.account_type === 'MT5') {
+                    groupedData[timestamp].mt5 = row;
+                }
+            } */
+
+            if (!groupedData[timestamp]) {
+                groupedData[timestamp] = { mt5: {} };
             }
-            
-            if (row.account_type === 'MT4') {
-                groupedData[timestamp].mt4 = row;
-            } else if (row.account_type === 'MT5') {
+
+            if (row.account_type === 'MT5') {
                 groupedData[timestamp].mt5 = row;
             }
         });
