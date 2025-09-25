@@ -65,6 +65,18 @@ if ($row = $currentResult->fetch_assoc()) {
 
 $srvSnapshot = mapMt5SnapshotToSrv($currentData['MT5'] ?? []);
 
+$lastSnapshotTimestamp = $currentData['MT5']['timestamp'] ?? null;
+$isOnline = false;
+
+if ($lastSnapshotTimestamp) {
+    $snapshotTime = strtotime($lastSnapshotTimestamp);
+
+    if ($snapshotTime !== false) {
+        // Treat the SRV as online if we have received data within the last 5 minutes.
+        $isOnline = $snapshotTime >= strtotime('-5 minutes');
+    }
+}
+
 // Get historical data for charts
 $historyQuery = "SELECT
     DATE_FORMAT(timestamp, '%Y-%m-%d %H:%i:00') as time_group,
@@ -197,7 +209,8 @@ $response = [
             'open_positions' => 0
         ],
         'srv' => $srvSnapshot,
-        'last_update' => date('Y-m-d H:i:s')
+        'last_update' => $lastSnapshotTimestamp,
+        'is_online' => $isOnline
     ],
     'history' => $historyData,
     'drawdown' => $drawdownData,

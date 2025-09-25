@@ -79,7 +79,7 @@
         <div class="dashboard-header" data-aos="fade-up">
           <h2>Real-Time Trading Performance</h2>
           <div class="status-indicator">
-            <span class="badge status-online" id="srv-status">SRV: Online</span>
+            <span class="badge status-offline" id="srv-status">SRV: Offline</span>
           </div>
           <div class="last-update">
             Last Update: <span id="last-update">--</span>
