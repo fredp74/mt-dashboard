@@ -159,18 +159,17 @@ void ExportToFile(string jsonData)
 //+------------------------------------------------------------------+
 void SendDataViaHTTP(string jsonData)
 {
-   char postData[];
+   // Convertir en tableau d’octets UTF-8
+   uchar postData[];
+   StringToCharArray(jsonData, postData, 0, WHOLE_ARRAY, CP_UTF8);
+
    string headers = "Content-Type: application/json\r\nX-API-Key: " + APIKey + "\r\n";
-   
-   // Convert string to char array
-   StringToCharArray(jsonData, postData, 0, StringLen(jsonData));
-   ArrayResize(postData, ArraySize(postData) - 1); // remove null terminator
-   
-   // Send HTTP request
+
+   // Réponse
    char result[];
    string resultHeaders;
-   int timeout = 5000; // 5 seconds timeout
-   
+   int timeout = 5000;
+
    int res = WebRequest(
       "POST",
       WebServerURL,
@@ -180,8 +179,9 @@ void SendDataViaHTTP(string jsonData)
       result,
       resultHeaders
    );
-   
+
    string response = CharArrayToString(result);
+
    if(res == 200)
    {
       Print("✅ Data sent successfully. Response: ", response);
@@ -194,8 +194,10 @@ void SendDataViaHTTP(string jsonData)
    else
    {
       Print("⚠️ HTTP Error: ", res, " | Response: ", response);
+      Print("🔎 Sent JSON: ", jsonData);
    }
 }
+
 
 //+------------------------------------------------------------------+
 //| Expert deinitialization function                                 |
