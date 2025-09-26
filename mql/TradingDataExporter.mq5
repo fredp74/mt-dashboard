@@ -89,12 +89,13 @@ string CreateJSONData()
     double totalVolume = 0;
     double totalProfit = 0;
     
+    CPositionInfo position;
     for(int i = 0; i < totalPositions; i++)
     {
-        if(PositionSelectByIndex(i))
+        if(position.SelectByIndex(i))
         {
-            totalVolume += PositionGetDouble(POSITION_VOLUME);
-            totalProfit += PositionGetDouble(POSITION_PROFIT);
+            totalVolume += position.Volume();
+            totalProfit += position.Profit();
         }
     }
     
