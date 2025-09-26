@@ -81,7 +81,7 @@ string CreateJSONData()
    double equity      = AccountInfoDouble(ACCOUNT_EQUITY);
    double profit      = AccountInfoDouble(ACCOUNT_PROFIT);
    double margin      = AccountInfoDouble(ACCOUNT_MARGIN);
-   double freeMargin  = AccountInfoDouble(ACCOUNT_FREEMARGIN);
+   double freeMargin  = AccountInfoDouble(ACCOUNT_MARGIN_FREE);
    
    // Position information
    int totalPositions = PositionsTotal();
