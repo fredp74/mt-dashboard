@@ -102,35 +102,21 @@ string CreateJSONData()
    // Server time
    datetime serverTime = TimeCurrent();
    string timeString = TimeToString(serverTime, TIME_DATE|TIME_MINUTES|TIME_SECONDS);
-   
    // Build JSON string
-   string json = StringFormat(
-      "{"
-      "\"account_type\": \"MT5\","
-      "\"balance\": %.2f,"
-      "\"equity\": %.2f,"
-      "\"profit\": %.2f,"
-      "\"margin\": %.2f,"
-      "\"free_margin\": %.2f,"
-      "\"open_positions\": %d,"
-      "\"total_volume\": %.2f,"
-      "\"server_time\": \"%s\","
-      "\"timestamp\": \"%s\","
-      "\"account_number\": %d,"
-      "\"account_leverage\": %d"
-      "}",
-      balance,
-      equity,
-      profit,
-      margin,
-      freeMargin,
-      totalPositions,
-      totalVolume,
-      timeString,
-      timeString,
-      (int)AccountInfoInteger(ACCOUNT_LOGIN),
-      (int)AccountInfoInteger(ACCOUNT_LEVERAGE)
-   );
+   string json = "{";
+   json += "\"account_type\": \"MT5\",";
+   json += StringFormat("\"balance\": %.2f,", balance);
+   json += StringFormat("\"equity\": %.2f,", equity);
+   json += StringFormat("\"profit\": %.2f,", profit);
+   json += StringFormat("\"margin\": %.2f,", margin);
+   json += StringFormat("\"free_margin\": %.2f,", freeMargin);
+   json += StringFormat("\"open_positions\": %d,", totalPositions);
+   json += StringFormat("\"total_volume\": %.2f,", totalVolume);
+   json += StringFormat("\"server_time\": \"%s\",", timeString);
+   json += StringFormat("\"timestamp\": \"%s\",", timeString);
+   json += StringFormat("\"account_number\": %d,", (int)AccountInfoInteger(ACCOUNT_LOGIN));
+   json += StringFormat("\"account_leverage\": %d", (int)AccountInfoInteger(ACCOUNT_LEVERAGE));
+   json += "}";
    
    return json;
 }
