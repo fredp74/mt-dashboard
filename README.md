@@ -90,7 +90,7 @@ input string ExportFileName = "mt5_data.json";     // File name for local export
 ## ⚙️ Backend API
 
 - `api/config.php` → Database credentials + API key validation.  
-- `api/receive_data.php` → Receives POSTed JSON data from MT5 exporters, validates API key, stores into DB.
+- `api/receive_data.php` → Receives POSTed JSON data from MT5 exporters, validates API key, sanitizes payloads, and stores snapshots (including MT5 timestamps) into MariaDB.
 - `api/get_data.php` → Returns stored trading/account data as JSON for frontend use.  
 - `logs/api.log` → Logs requests, errors, and system activity.  
 
