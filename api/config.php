@@ -1,12 +1,12 @@
 <?php
 // Database configuration
 define('DB_HOST', 'localhost');
-define('DB_USER', 'trading_user');
-define('DB_PASS', 'your_secure_password_123!');
-define('DB_NAME', 'trading_dashboard');
+define('DB_USER', 'algo_trading_user');
+define('DB_PASS', 't27540t27540');
+define('DB_NAME', 'algo_trading_dashboard');
 
 // API Security
-define('API_KEY', 'your-ultra-secure-api-key-2024-' . md5('algotradingresearch.com'));
+define('API_KEY', 'api123');
 
 // Timezone
 date_default_timezone_set('America/New_York'); // Adjust to your timezone
