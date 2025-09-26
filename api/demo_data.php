@@ -84,7 +84,8 @@ function getDemoData(string $period, string $reason = ''): array
     ];
 
     return [
-        'status' => 'demo',
+        'status' => 'success',
+        'mode' => 'demo',
         'message' => $reason !== '' ? $reason : 'Live data unavailable — displaying demo metrics.',
         'period' => $period,
         'current' => [

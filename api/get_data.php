@@ -224,6 +224,7 @@ $response = [
     'drawdown' => $drawdownData,
     'period' => $period,
     'status' => 'success',
+    'mode' => 'live',
     'data_points' => count($historyData)
 ];
 

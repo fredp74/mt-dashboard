@@ -276,7 +276,10 @@ class TradingDashboard {
             }
 
             const current = data.current || {};
-            const isDemoMode = data.status === 'demo';
+            const dataMode = typeof data.mode === 'string'
+                ? data.mode.toLowerCase()
+                : (data.status === 'demo' ? 'demo' : 'live');
+            const isDemoMode = dataMode === 'demo';
             const isOnline = !isDemoMode && Boolean(current.is_online);
 
             if (isDemoMode) {
@@ -289,7 +292,12 @@ class TradingDashboard {
                 this.demoToastShown = false;
                 const demoToast = document.getElementById('demo-toast');
                 if (demoToast) {
-                    bootstrap.Toast.getOrCreateInstance(demoToast).hide();
+                    const Toast = window.bootstrap && window.bootstrap.Toast;
+                    if (Toast) {
+                        Toast.getOrCreateInstance(demoToast).hide();
+                    } else {
+                        demoToast.remove();
+                    }
                 }
                 this.updateConnectionStatus(isOnline);
             }
@@ -339,8 +347,13 @@ class TradingDashboard {
             toast.querySelector('.toast-body').textContent = message;
         }
         
-        const bsToast = new bootstrap.Toast(toast);
-        bsToast.show();
+        const Toast = window.bootstrap && window.bootstrap.Toast;
+        if (Toast) {
+            const bsToast = Toast.getOrCreateInstance(toast);
+            bsToast.show();
+        } else {
+            console.warn('Bootstrap toast unavailable. Message:', message);
+        }
     }
 
     showDemoNotice(message) {
@@ -363,8 +376,13 @@ class TradingDashboard {
             toast.querySelector('.toast-body').textContent = message;
         }
 
-        const bsToast = bootstrap.Toast.getOrCreateInstance(toast, { autohide: false });
-        bsToast.show();
+        const Toast = window.bootstrap && window.bootstrap.Toast;
+        if (Toast) {
+            const bsToast = Toast.getOrCreateInstance(toast, { autohide: false });
+            bsToast.show();
+        } else {
+            console.warn('Bootstrap toast unavailable. Message:', message);
+        }
     }
 
     updateCurrentStats(current, isOnline) {
