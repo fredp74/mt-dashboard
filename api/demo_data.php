@@ -2,151 +2,243 @@
 
 declare(strict_types=1);
 
+const DEMO_PERIOD_SETTINGS = [
+    '24h' => ['points' => 25, 'stepMinutes' => 60],
+    '7d'  => ['points' => 28, 'stepMinutes' => 360],
+    '30d' => ['points' => 30, 'stepMinutes' => 1440],
+];
+
 /**
- * Provide deterministic demo payloads so the dashboard can function even when
- * the live database is offline. The data is intentionally simple but mimics
- * an improving equity curve so charts and KPIs remain meaningful.
+ * Normalise the requested demo period to one of the supported presets.
  */
-function getDemoData(string $period, string $reason = ''): array
+function normaliseDemoPeriod(string $period): string
 {
-    $period = in_array($period, ['24h', '7d', '30d'], true) ? $period : '24h';
+    $key = strtolower(trim($period));
+    return array_key_exists($key, DEMO_PERIOD_SETTINGS) ? $key : '24h';
+}
 
-    $config = [
-        '24h' => ['points' => 24, 'stepMinutes' => 60],
-        '7d'  => ['points' => 28, 'stepMinutes' => 360],
-        '30d' => ['points' => 30, 'stepMinutes' => 1440],
-    ];
-
-    $settings = $config[$period];
+/**
+ * Build deterministic SRV and MT5 timelines that trend upward while keeping the
+ * profit figures visually dominant. The generated snapshots intentionally
+ * mirror the live payload structure so the frontend can render them without
+ * special casing.
+ *
+ * @return array{
+ *     history: array<int, array<string, mixed>>,
+ *     srvHistory: array<int, array<string, mixed>>,
+ *     mt5History: array<int, array<string, mixed>>
+ * }
+ */
+function buildDemoTimelines(string $period): array
+{
+    $settings = DEMO_PERIOD_SETTINGS[$period];
     $points = $settings['points'];
     $stepMinutes = $settings['stepMinutes'];
 
-    $now = new DateTimeImmutable('now', new DateTimeZone(date_default_timezone_get()));
+    $timezone = new DateTimeZone(date_default_timezone_get());
+    $now = new DateTimeImmutable('now', $timezone);
+
     $history = [];
     $srvHistory = [];
     $mt5History = [];
 
-    for ($index = $points - 1; $index >= 0; $index--) {
-        $offsetMinutes = $index * $stepMinutes;
-        $timestamp = $offsetMinutes === 0
+    for ($index = 0; $index < $points; $index++) {
+        $offset = ($points - 1 - $index) * $stepMinutes;
+        $timestamp = $offset === 0
             ? $now
-            : $now->sub(new DateInterval('PT' . $offsetMinutes . 'M'));
+            : $now->sub(new DateInterval('PT' . $offset . 'M'));
 
-        $progress = 1 - ($index / max(1, $points - 1));
-        $balance = 12000 + (1500 * $progress) + (sin($index / 2) * 80);
-        $equity = $balance - 80 + (cos($index / 3) * 45);
+        $progress = $points > 1 ? $index / ($points - 1) : 1.0;
 
-        // Keep profit visually dominant by ensuring it always exceeds both balance
-        // and equity values in the demo payload. This makes the dashboard reflect
-        // the user's request for a larger profit figure while maintaining a smooth
-        // progression for the charts.
-        $profitBase = max($balance, $equity) + 1800;
-        $profit = $profitBase + (sin($index / 1.5) * 75);
+        $balanceBase = 11800 + ($progress * 1800);
+        $equityBase = $balanceBase - 120 + (sin($index / 3) * 65);
+        $profitBase = max($balanceBase, $equityBase) + 1750 + (cos($index / 2.7) * 85);
 
         $srvSnapshot = [
             'timestamp' => $timestamp->format('Y-m-d H:i:s'),
             'account_type' => 'SRV',
-            'balance' => round($balance, 2),
-            'equity' => round($equity, 2),
-            'profit' => round($profit, 2),
+            'balance' => round($balanceBase + (sin($index / 1.8) * 70), 2),
+            'equity' => round($equityBase, 2),
+            'profit' => round($profitBase, 2),
+            'margin' => round(($balanceBase * 0.11) + 25, 2),
+            'free_margin' => round(($balanceBase * 0.8) + 40, 2),
+            'open_positions' => 4,
+            'total_volume' => 12.8,
         ];
 
-        $mt5Balance = $balance - 220 + (sin($index / 1.8) * 60);
-        $mt5Equity = $mt5Balance - 110 + (cos($index / 2.4) * 30);
-        $mt5ProfitBase = max($mt5Balance, $mt5Equity) + 1450;
-        $mt5Profit = $mt5ProfitBase + (cos($index / 1.6) * 55);
+        $mt5BalanceBase = $balanceBase - 240 + (cos($index / 2.3) * 55);
+        $mt5EquityBase = $mt5BalanceBase - 95 + (sin($index / 2.1) * 45);
+        $mt5ProfitBase = max($mt5BalanceBase, $mt5EquityBase) + 1480 + (sin($index / 1.7) * 60);
 
         $mt5Snapshot = [
             'timestamp' => $timestamp->format('Y-m-d H:i:s'),
             'account_type' => 'MT5',
-            'balance' => round($mt5Balance, 2),
-            'equity' => round($mt5Equity, 2),
-            'profit' => round($mt5Profit, 2),
+            'balance' => round($mt5BalanceBase, 2),
+            'equity' => round($mt5EquityBase, 2),
+            'profit' => round($mt5ProfitBase, 2),
+            'margin' => round(($mt5BalanceBase * 0.09) + 35, 2),
+            'free_margin' => round(($mt5BalanceBase * 0.76) + 50, 2),
+            'open_positions' => 3,
+            'total_volume' => 9.6,
         ];
 
         $srvHistory[] = $srvSnapshot;
         $mt5History[] = $mt5Snapshot;
-
-        $history[] = $srvSnapshot;
-        $history[] = $mt5Snapshot;
+        $history[] = [
+            'timestamp' => $srvSnapshot['timestamp'],
+            'account_type' => 'SRV',
+            'balance' => $srvSnapshot['balance'],
+            'equity' => $srvSnapshot['equity'],
+            'profit' => $srvSnapshot['profit'],
+        ];
+        $history[] = [
+            'timestamp' => $mt5Snapshot['timestamp'],
+            'account_type' => 'MT5',
+            'balance' => $mt5Snapshot['balance'],
+            'equity' => $mt5Snapshot['equity'],
+            'profit' => $mt5Snapshot['profit'],
+        ];
     }
 
-    $latestSrvSnapshot = end($srvHistory) ?: [];
-    $latestMt5Snapshot = end($mt5History) ?: [];
-    $firstSrvSnapshot = reset($srvHistory) ?: [];
-    $latestSnapshot = $latestSrvSnapshot ?: ($history !== [] ? end($history) : []);
+    return [
+        'history' => $history,
+        'srvHistory' => $srvHistory,
+        'mt5History' => $mt5History,
+    ];
+}
 
-    $currentBalance = $latestSrvSnapshot['balance'] ?? 0.0;
-    $currentEquity = $latestSrvSnapshot['equity'] ?? 0.0;
-    $currentProfit = $latestSrvSnapshot['profit'] ?? 0.0;
-    $currentMt5Profit = $latestMt5Snapshot['profit'] ?? 0.0;
-
-    $performancePercent = 0.0;
-    if ($firstSrvSnapshot && ($firstSrvSnapshot['balance'] ?? 0) > 0) {
-        $performancePercent = (($currentBalance - $firstSrvSnapshot['balance']) / $firstSrvSnapshot['balance']) * 100;
+/**
+ * Calculate the aggregate drawdown metrics from the combined SRV/MT5 equity
+ * timeline.
+ *
+ * @param array<int, array{timestamp: string, equity: float}> $aggregateEquity
+ *
+ * @return array{max_drawdown: float, peak_equity: float, trough_equity: float, peak_date: string|null, trough_date: string|null}
+ */
+function calculateDemoDrawdown(array $aggregateEquity): array
+{
+    if ($aggregateEquity === []) {
+        return [
+            'max_drawdown' => 0.0,
+            'peak_equity' => 0.0,
+            'trough_equity' => 0.0,
+            'peak_date' => null,
+            'trough_date' => null,
+        ];
     }
 
-    $equityValues = array_column($srvHistory, 'equity');
-    $peakEquity = $equityValues !== [] ? max($equityValues) : 0.0;
-    $troughEquity = $equityValues !== [] ? min($equityValues) : 0.0;
-    $peakIndex = $equityValues !== [] ? array_search($peakEquity, $equityValues, true) : null;
-    $troughIndex = $equityValues !== [] ? array_search($troughEquity, $equityValues, true) : null;
+    $peakEquity = 0.0;
+    $peakDate = null;
+    $troughEquity = 0.0;
+    $troughDate = null;
+    $maxDrawdown = 0.0;
 
-    $maxDrawdown = $peakEquity > 0
-        ? (($peakEquity - $troughEquity) / $peakEquity) * 100
+    foreach ($aggregateEquity as $point) {
+        $equity = (float)$point['equity'];
+        $timestamp = $point['timestamp'];
+
+        if ($equity > $peakEquity) {
+            $peakEquity = $equity;
+            $peakDate = $timestamp;
+        }
+
+        if ($peakEquity > 0) {
+            $drawdown = (($peakEquity - $equity) / $peakEquity) * 100;
+            if ($drawdown > $maxDrawdown) {
+                $maxDrawdown = $drawdown;
+                $troughEquity = $equity;
+                $troughDate = $timestamp;
+            }
+        }
+    }
+
+    return [
+        'max_drawdown' => round($maxDrawdown, 2),
+        'peak_equity' => round($peakEquity, 2),
+        'trough_equity' => round($troughEquity, 2),
+        'peak_date' => $peakDate,
+        'trough_date' => $troughDate,
+    ];
+}
+
+/**
+ * Provide deterministic demo payloads so the dashboard can function even when
+ * the live database is offline.
+ */
+function getDemoData(string $period, string $reason = ''): array
+{
+    $periodKey = normaliseDemoPeriod($period);
+    $timelines = buildDemoTimelines($periodKey);
+
+    $srvHistory = $timelines['srvHistory'];
+    $mt5History = $timelines['mt5History'];
+    $history = $timelines['history'];
+
+    $latestSrv = $srvHistory !== [] ? end($srvHistory) : [];
+    $latestMt5 = $mt5History !== [] ? end($mt5History) : [];
+    $latestTimestamp = $latestSrv['timestamp'] ?? ($latestMt5['timestamp'] ?? null);
+
+    $aggregateEquity = [];
+    $aggregateBalance = [];
+    foreach ($history as $entry) {
+        $timestamp = $entry['timestamp'];
+        if (!isset($aggregateEquity[$timestamp])) {
+            $aggregateEquity[$timestamp] = ['timestamp' => $timestamp, 'equity' => 0.0];
+            $aggregateBalance[$timestamp] = 0.0;
+        }
+
+        $aggregateEquity[$timestamp]['equity'] += (float)$entry['equity'];
+        $aggregateBalance[$timestamp] += (float)$entry['balance'];
+    }
+
+    ksort($aggregateEquity);
+    ksort($aggregateBalance);
+
+    $drawdown = calculateDemoDrawdown(array_values($aggregateEquity));
+
+    $firstBalance = $aggregateBalance !== [] ? reset($aggregateBalance) : 0.0;
+    $lastBalance = $aggregateBalance !== [] ? end($aggregateBalance) : 0.0;
+    $performancePercent = $firstBalance > 0
+        ? (($lastBalance - $firstBalance) / $firstBalance) * 100
         : 0.0;
 
-    $currentSnapshot = [
-        'balance' => round($currentBalance, 2),
-        'equity' => round($currentEquity, 2),
-        'profit' => round($currentProfit, 2),
-        'margin' => round($currentBalance * 0.12, 2),
-        'free_margin' => round($currentBalance * 0.82, 2),
-        'open_positions' => 4,
-        'total_volume' => 12.4,
-        'timestamp' => $latestSnapshot['timestamp'] ?? $now->format('Y-m-d H:i:s'),
+    $totalBalance = max((float)($latestSrv['balance'] ?? 0), (float)($latestMt5['balance'] ?? 0));
+    $totalEquity = max((float)($latestSrv['equity'] ?? 0), (float)($latestMt5['equity'] ?? 0));
+    $totalProfit = max((float)($latestSrv['profit'] ?? 0), (float)($latestMt5['profit'] ?? 0));
+    $totalPositions = max((int)($latestSrv['open_positions'] ?? 0), (int)($latestMt5['open_positions'] ?? 0));
+
+    $defaultAccount = [
+        'balance' => 0.0,
+        'equity' => 0.0,
+        'profit' => 0.0,
+        'margin' => 0.0,
+        'free_margin' => 0.0,
+        'open_positions' => 0,
+        'total_volume' => 0.0,
+        'timestamp' => $latestTimestamp,
     ];
 
-    $mt5Balance = $latestMt5Snapshot['balance'] ?? $currentBalance;
-    $mt5SnapshotCurrent = [
-        'balance' => round($mt5Balance, 2),
-        'equity' => round($latestMt5Snapshot['equity'] ?? $currentEquity, 2),
-        'profit' => round($currentMt5Profit, 2),
-        'margin' => round($mt5Balance * 0.1, 2),
-        'free_margin' => round($mt5Balance * 0.78, 2),
-        'open_positions' => 3,
-        'total_volume' => 9.8,
-        'timestamp' => $latestMt5Snapshot['timestamp'] ?? $currentSnapshot['timestamp'],
-    ];
+    $srvCurrent = $latestSrv + ['timestamp' => $latestTimestamp];
+    $mt5Current = $latestMt5 + ['timestamp' => $latestTimestamp];
 
     return [
         'status' => 'success',
         'mode' => 'demo',
         'message' => $reason !== '' ? $reason : 'Live data unavailable — displaying demo metrics.',
-        'period' => $period,
+        'period' => $periodKey,
         'current' => [
-            'total_balance' => $currentSnapshot['balance'],
-            'total_equity' => $currentSnapshot['equity'],
-            'total_profit' => max($currentSnapshot['profit'], $currentMt5Profit),
-            'total_positions' => $currentSnapshot['open_positions'],
+            'total_balance' => round($totalBalance, 2),
+            'total_equity' => round($totalEquity, 2),
+            'total_profit' => round($totalProfit, 2),
+            'total_positions' => $totalPositions,
             'performance_percent' => round($performancePercent, 2),
-            'mt5' => $mt5SnapshotCurrent,
-            'srv' => $currentSnapshot,
-            'last_update' => $latestSnapshot['timestamp'] ?? $now->format('Y-m-d H:i:s'),
+            'mt5' => array_merge($defaultAccount, $mt5Current),
+            'srv' => array_merge($defaultAccount, $srvCurrent),
+            'last_update' => $latestTimestamp,
             'is_online' => false,
         ],
         'history' => $history,
-        'drawdown' => [
-            'max_drawdown' => round(abs($maxDrawdown), 2),
-            'peak_equity' => round($peakEquity, 2),
-            'trough_equity' => round($troughEquity, 2),
-            'peak_date' => ($peakIndex !== null && isset($srvHistory[$peakIndex]))
-                ? $srvHistory[$peakIndex]['timestamp']
-                : ($latestSnapshot['timestamp'] ?? $now->format('Y-m-d H:i:s')),
-            'trough_date' => ($troughIndex !== null && isset($srvHistory[$troughIndex]))
-                ? $srvHistory[$troughIndex]['timestamp']
-                : ($latestSnapshot['timestamp'] ?? $now->format('Y-m-d H:i:s')),
-        ],
+        'drawdown' => $drawdown,
         'data_points' => count($srvHistory),
     ];
 }
