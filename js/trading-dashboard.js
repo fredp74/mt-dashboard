@@ -226,7 +226,16 @@ class TradingDashboard {
         chartContainers.forEach(container => {
             if (!container.querySelector('.loading-spinner')) {
                 const spinner = document.createElement('div');
-                spinner.className = 'loading-spinner d-flex justify-content-center align-items-center position-absolute w-100 h-100';
+                const spinnerClasses = [
+                    'loading-spinner',
+                    'd-flex',
+                    'justify-content-center',
+                    'align-items-center',
+                    'position-absolute',
+                    'w-100',
+                    'h-100'
+                ];
+                spinner.className = spinnerClasses.join(' ');
                 spinner.style.top = '0';
                 spinner.style.left = '0';
                 spinner.style.backgroundColor = 'rgba(255,255,255,0.8)';
@@ -495,25 +504,40 @@ class TradingDashboard {
         // Group data by timestamp
         const groupedData = {};
         historyData.forEach(row => {
-            const timestamp = new Date(row.timestamp).toISOString();
-            if (!groupedData[timestamp]) {
-                groupedData[timestamp] = { srv: {}, legacy: {} };
+            if (!row || !row.timestamp) {
+                return;
             }
 
-            if (row.account_type === 'SRV') {
+            const parsed = new Date(row.timestamp);
+            if (Number.isNaN(parsed.getTime())) {
+                return;
+            }
+
+            const timestamp = parsed.toISOString();
+            if (!groupedData[timestamp]) {
+                groupedData[timestamp] = { srv: null, mt5: null };
+            }
+
+            const accountType = typeof row.account_type === 'string'
+                ? row.account_type.toUpperCase()
+                : '';
+
+            if (accountType === 'SRV') {
                 groupedData[timestamp].srv = row;
-            } else if (row.account_type === 'MT5') {
-                groupedData[timestamp].legacy = row;
+            } else if (accountType === 'MT5') {
+                groupedData[timestamp].mt5 = row;
             }
         });
 
         // Convert grouped data to chart format
-        Object.keys(groupedData).sort().forEach(timestamp => {
-            const data = groupedData[timestamp];
-            const date = new Date(timestamp);
-            
-            // Format time label based on period
-            let timeLabel;
+        Object.keys(groupedData)
+            .sort((a, b) => new Date(a) - new Date(b))
+            .forEach(timestamp => {
+                const data = groupedData[timestamp];
+                const date = new Date(timestamp);
+
+                // Format time label based on period
+                let timeLabel;
             if (this.currentPeriod === '24h') {
                 timeLabel = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             } else if (this.currentPeriod === '7d') {
@@ -522,16 +546,27 @@ class TradingDashboard {
                 timeLabel = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
             }
             
-            timeLabels.push(timeLabel);
-            
-            const accountSnapshot = Object.keys(data.srv || {}).length ? data.srv : data.legacy || {};
-            const totalProfit = accountSnapshot.profit || 0;
-            profitData.push(totalProfit);
+                timeLabels.push(timeLabel);
 
-            // Individual account data
-            srvBalanceData.push(accountSnapshot.balance || null);
-            srvEquityData.push(accountSnapshot.equity || null);
-        });
+                const srvSnapshot = data.srv || null;
+                const mt5Snapshot = data.mt5 || null;
+                const referenceSnapshot = srvSnapshot && Object.keys(srvSnapshot).length
+                    ? srvSnapshot
+                    : (mt5Snapshot && Object.keys(mt5Snapshot).length ? mt5Snapshot : {});
+
+                const profitValue = Number(referenceSnapshot.profit ?? 0);
+                profitData.push(Number.isFinite(profitValue) ? profitValue : 0);
+
+                const balanceValue = srvSnapshot && Object.prototype.hasOwnProperty.call(srvSnapshot, 'balance')
+                    ? Number(srvSnapshot.balance)
+                    : Number(referenceSnapshot.balance ?? NaN);
+                const equityValue = srvSnapshot && Object.prototype.hasOwnProperty.call(srvSnapshot, 'equity')
+                    ? Number(srvSnapshot.equity)
+                    : Number(referenceSnapshot.equity ?? NaN);
+
+                srvBalanceData.push(Number.isFinite(balanceValue) ? balanceValue : null);
+                srvEquityData.push(Number.isFinite(equityValue) ? equityValue : null);
+            });
 
         // Update profit chart with enhanced visuals
         this.profitChart.data.labels = timeLabels;

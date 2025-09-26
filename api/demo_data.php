@@ -23,6 +23,8 @@ function getDemoData(string $period, string $reason = ''): array
 
     $now = new DateTimeImmutable('now', new DateTimeZone(date_default_timezone_get()));
     $history = [];
+    $srvHistory = [];
+    $mt5History = [];
 
     for ($index = $points - 1; $index >= 0; $index--) {
         $offsetMinutes = $index * $stepMinutes;
@@ -41,32 +43,54 @@ function getDemoData(string $period, string $reason = ''): array
         $profitBase = max($balance, $equity) + 1800;
         $profit = $profitBase + (sin($index / 1.5) * 75);
 
-        $history[] = [
+        $srvSnapshot = [
             'timestamp' => $timestamp->format('Y-m-d H:i:s'),
             'account_type' => 'SRV',
             'balance' => round($balance, 2),
             'equity' => round($equity, 2),
             'profit' => round($profit, 2),
         ];
+
+        $mt5Balance = $balance - 220 + (sin($index / 1.8) * 60);
+        $mt5Equity = $mt5Balance - 110 + (cos($index / 2.4) * 30);
+        $mt5ProfitBase = max($mt5Balance, $mt5Equity) + 1450;
+        $mt5Profit = $mt5ProfitBase + (cos($index / 1.6) * 55);
+
+        $mt5Snapshot = [
+            'timestamp' => $timestamp->format('Y-m-d H:i:s'),
+            'account_type' => 'MT5',
+            'balance' => round($mt5Balance, 2),
+            'equity' => round($mt5Equity, 2),
+            'profit' => round($mt5Profit, 2),
+        ];
+
+        $srvHistory[] = $srvSnapshot;
+        $mt5History[] = $mt5Snapshot;
+
+        $history[] = $srvSnapshot;
+        $history[] = $mt5Snapshot;
     }
 
-    $latestSnapshot = end($history);
-    $firstSnapshot = reset($history);
+    $latestSrvSnapshot = end($srvHistory) ?: [];
+    $latestMt5Snapshot = end($mt5History) ?: [];
+    $firstSrvSnapshot = reset($srvHistory) ?: [];
+    $latestSnapshot = $latestSrvSnapshot ?: ($history !== [] ? end($history) : []);
 
-    $currentBalance = $latestSnapshot['balance'];
-    $currentEquity = $latestSnapshot['equity'];
-    $currentProfit = $latestSnapshot['profit'];
+    $currentBalance = $latestSrvSnapshot['balance'] ?? 0.0;
+    $currentEquity = $latestSrvSnapshot['equity'] ?? 0.0;
+    $currentProfit = $latestSrvSnapshot['profit'] ?? 0.0;
+    $currentMt5Profit = $latestMt5Snapshot['profit'] ?? 0.0;
 
     $performancePercent = 0.0;
-    if ($firstSnapshot && $firstSnapshot['balance'] > 0) {
-        $performancePercent = (($currentBalance - $firstSnapshot['balance']) / $firstSnapshot['balance']) * 100;
+    if ($firstSrvSnapshot && ($firstSrvSnapshot['balance'] ?? 0) > 0) {
+        $performancePercent = (($currentBalance - $firstSrvSnapshot['balance']) / $firstSrvSnapshot['balance']) * 100;
     }
 
-    $equityValues = array_column($history, 'equity');
-    $peakEquity = max($equityValues);
-    $troughEquity = min($equityValues);
-    $peakIndex = array_search($peakEquity, $equityValues, true);
-    $troughIndex = array_search($troughEquity, $equityValues, true);
+    $equityValues = array_column($srvHistory, 'equity');
+    $peakEquity = $equityValues !== [] ? max($equityValues) : 0.0;
+    $troughEquity = $equityValues !== [] ? min($equityValues) : 0.0;
+    $peakIndex = $equityValues !== [] ? array_search($peakEquity, $equityValues, true) : null;
+    $troughIndex = $equityValues !== [] ? array_search($troughEquity, $equityValues, true) : null;
 
     $maxDrawdown = $peakEquity > 0
         ? (($peakEquity - $troughEquity) / $peakEquity) * 100
@@ -80,7 +104,19 @@ function getDemoData(string $period, string $reason = ''): array
         'free_margin' => round($currentBalance * 0.82, 2),
         'open_positions' => 4,
         'total_volume' => 12.4,
-        'timestamp' => $latestSnapshot['timestamp'],
+        'timestamp' => $latestSnapshot['timestamp'] ?? $now->format('Y-m-d H:i:s'),
+    ];
+
+    $mt5Balance = $latestMt5Snapshot['balance'] ?? $currentBalance;
+    $mt5SnapshotCurrent = [
+        'balance' => round($mt5Balance, 2),
+        'equity' => round($latestMt5Snapshot['equity'] ?? $currentEquity, 2),
+        'profit' => round($currentMt5Profit, 2),
+        'margin' => round($mt5Balance * 0.1, 2),
+        'free_margin' => round($mt5Balance * 0.78, 2),
+        'open_positions' => 3,
+        'total_volume' => 9.8,
+        'timestamp' => $latestMt5Snapshot['timestamp'] ?? $currentSnapshot['timestamp'],
     ];
 
     return [
@@ -91,12 +127,12 @@ function getDemoData(string $period, string $reason = ''): array
         'current' => [
             'total_balance' => $currentSnapshot['balance'],
             'total_equity' => $currentSnapshot['equity'],
-            'total_profit' => $currentSnapshot['profit'],
+            'total_profit' => max($currentSnapshot['profit'], $currentMt5Profit),
             'total_positions' => $currentSnapshot['open_positions'],
             'performance_percent' => round($performancePercent, 2),
-            'mt5' => $currentSnapshot,
+            'mt5' => $mt5SnapshotCurrent,
             'srv' => $currentSnapshot,
-            'last_update' => $latestSnapshot['timestamp'],
+            'last_update' => $latestSnapshot['timestamp'] ?? $now->format('Y-m-d H:i:s'),
             'is_online' => false,
         ],
         'history' => $history,
@@ -104,9 +140,13 @@ function getDemoData(string $period, string $reason = ''): array
             'max_drawdown' => round(abs($maxDrawdown), 2),
             'peak_equity' => round($peakEquity, 2),
             'trough_equity' => round($troughEquity, 2),
-            'peak_date' => $history[$peakIndex]['timestamp'] ?? $latestSnapshot['timestamp'],
-            'trough_date' => $history[$troughIndex]['timestamp'] ?? $latestSnapshot['timestamp'],
+            'peak_date' => ($peakIndex !== null && isset($srvHistory[$peakIndex]))
+                ? $srvHistory[$peakIndex]['timestamp']
+                : ($latestSnapshot['timestamp'] ?? $now->format('Y-m-d H:i:s')),
+            'trough_date' => ($troughIndex !== null && isset($srvHistory[$troughIndex]))
+                ? $srvHistory[$troughIndex]['timestamp']
+                : ($latestSnapshot['timestamp'] ?? $now->format('Y-m-d H:i:s')),
         ],
-        'data_points' => count($history),
+        'data_points' => count($srvHistory),
     ];
 }
