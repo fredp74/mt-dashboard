@@ -1,12 +1,12 @@
 <?php
 // Database configuration
 define('DB_HOST', 'localhost');
-define('DB_USER', 'trading_user');
-define('DB_PASS', 'your_secure_password_123!');
-define('DB_NAME', 'trading_dashboard');
+define('DB_USER', 'algo_trading_user');
+define('DB_PASS', 't27540t27540');
+define('DB_NAME', 'algo_trading_dashboard');
 
 // API Security
-define('API_KEY', 'your-ultra-secure-api-key-2024-' . md5('algotradingresearch.com'));
+define('API_KEY', 'api123');
 
 // Timezone
 date_default_timezone_set('America/New_York'); // Adjust to your timezone
@@ -51,9 +51,10 @@ function logAPICall($endpoint, $data = [], $response = []) {
         'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
         'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
         'data_size' => strlen(json_encode($data)),
-        'response_status' => $response['status'] ?? 'unknown'
+        'response_status' => $response['status'] ?? 'unknown',
+        'response_message' => $response['message'] ?? ($response['error'] ?? 'n/a')
     ];
-    
+
     error_log("API_CALL: " . json_encode($log_entry));
 }
 ?>
