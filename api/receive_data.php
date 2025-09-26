@@ -252,7 +252,7 @@ if (!$statement) {
 }
 
 $statement->bind_param(
-    'sddddddids',
+    'sdddddidds',
     $sanitizedPayload['account_type'],
     $sanitizedPayload['balance'],
     $sanitizedPayload['equity'],
