@@ -6,6 +6,8 @@
 #property version   "1.00"
 #property description "Exports MT5 trading data to web server"
 
+#include <Trade\PositionInfo.mqh>
+
 input int UpdateIntervalSeconds = 60;              // Update interval in seconds
 input string WebServerURL = "https://algotradingresearch.com/dashboard/api/receive_data.php";
 input string APIKey = "your-secure-api-key-here";  // Your API key
