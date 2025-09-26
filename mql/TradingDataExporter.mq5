@@ -145,9 +145,18 @@ void ExportToFile(string jsonData)
 //+------------------------------------------------------------------+
 void SendDataViaHTTP(string jsonData)
 {
-   // Convertir en tableau d’octets UTF-8
+   // Convert JSON payload to a UTF-8 byte array and remove the trailing
+   // null terminator automatically appended by StringToCharArray(). A
+   // handful of web servers treat the stray null byte as part of the body,
+   // which causes JSON parsing to fail and results in the 400 "Invalid JSON
+   // data" responses that were observed. Resizing the array ensures only the
+   // meaningful bytes are sent.
    uchar postData[];
-   StringToCharArray(jsonData, postData, 0, WHOLE_ARRAY, CP_UTF8);
+   int copied = StringToCharArray(jsonData, postData, 0, WHOLE_ARRAY, CP_UTF8);
+   if(copied > 0 && ArraySize(postData) > 0)
+   {
+      ArrayResize(postData, copied - 1);
+   }
 
    string headers = "Content-Type: application/json\r\nX-API-Key: " + APIKey + "\r\n";
 
