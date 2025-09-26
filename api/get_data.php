@@ -1,21 +1,29 @@
 <?php
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/srv_aliases.php';
+require_once __DIR__ . '/demo_data.php';
+
+function respondWithDemoData(string $period, string $reason = ''): void
+{
+    http_response_code(200);
+    $demoPayload = getDemoData($period, $reason);
+    logAPICall('get_data', ['period' => $period, 'mode' => 'demo'], $demoPayload);
+    echo json_encode($demoPayload);
+    exit;
+}
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, X-API-Key');
 
+$period = $_GET['period'] ?? '24h';
+
 // Database connection
 $conn = getDBConnection();
 if (!$conn) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed']);
-    exit;
+    respondWithDemoData($period, 'Database connection failed. Showing demo data.');
 }
-
-$period = $_GET['period'] ?? '24h';
 
 // Calculate time range based on period
 switch ($period) {
@@ -54,9 +62,7 @@ LIMIT 1";
 
 $currentResult = $conn->query($currentQuery);
 if ($currentResult === false) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Failed to fetch current account data']);
-    exit;
+    respondWithDemoData($period, 'Unable to fetch current account snapshot. Showing demo data.');
 }
 $currentData = [];
 if ($row = $currentResult->fetch_assoc()) {
@@ -92,9 +98,7 @@ ORDER BY time_group ASC";
 
 $historyResult = $conn->query($historyQuery);
 if ($historyResult === false) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Failed to fetch historical account data']);
-    exit;
+    respondWithDemoData($period, 'Unable to fetch historical account data. Showing demo data.');
 }
 $historyData = [];
 while ($row = $historyResult->fetch_assoc()) {
@@ -105,6 +109,10 @@ while ($row = $historyResult->fetch_assoc()) {
         'equity' => round(floatval($row['equity']), 2),
         'profit' => round(floatval($row['profit']), 2)
     ];
+}
+
+if (empty($currentData) && empty($historyData)) {
+    respondWithDemoData($period, 'No trading activity recorded yet. Showing demo data.');
 }
 
 // Calculate maximum drawdown for the selected period

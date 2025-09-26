@@ -5,6 +5,7 @@ class TradingDashboard {
         this.balanceChart = null;
         this.currentPeriod = '24h';
         this.updateInterval = null;
+        this.demoToastShown = false;
         
         // Wait for AOS animations to initialize
         setTimeout(() => {
@@ -255,16 +256,32 @@ class TradingDashboard {
             }
 
             const current = data.current || {};
-            const isOnline = Boolean(current.is_online);
+            const isDemoMode = data.status === 'demo';
+            const isOnline = !isDemoMode && Boolean(current.is_online);
 
-            this.updateConnectionStatus(isOnline);
+            if (isDemoMode) {
+                if (!this.demoToastShown) {
+                    this.showDemoNotice(data.message || 'Showing demo data while the live feed is unavailable.');
+                    this.demoToastShown = true;
+                }
+                this.updateConnectionStatus('demo');
+            } else {
+                this.demoToastShown = false;
+                const demoToast = document.getElementById('demo-toast');
+                if (demoToast) {
+                    bootstrap.Toast.getOrCreateInstance(demoToast).hide();
+                }
+                this.updateConnectionStatus(isOnline);
+            }
+
             this.updateCurrentStats(current, isOnline);
 
             if (Array.isArray(data.history) && data.history.length > 0) {
                 this.updateCharts(data.history);
             }
 
-            this.updateDrawdown(data.drawdown || null, isOnline);
+            const drawdownMode = isDemoMode ? 'demo' : isOnline;
+            this.updateDrawdown(data.drawdown || null, drawdownMode);
 
             if (!isOnline) {
                 console.warn('SRV is offline - awaiting live data.');
@@ -302,6 +319,30 @@ class TradingDashboard {
         }
         
         const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+    }
+
+    showDemoNotice(message) {
+        let toast = document.getElementById('demo-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'demo-toast';
+            toast.className = 'toast position-fixed top-0 start-50 translate-middle-x mt-3';
+            toast.style.zIndex = '9999';
+            toast.innerHTML = `
+                <div class="toast-header bg-primary text-white">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong class="me-auto">Demo Mode</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">${message}</div>
+            `;
+            document.body.appendChild(toast);
+        } else {
+            toast.querySelector('.toast-body').textContent = message;
+        }
+
+        const bsToast = bootstrap.Toast.getOrCreateInstance(toast, { autohide: false });
         bsToast.show();
     }
 
@@ -367,11 +408,14 @@ class TradingDashboard {
         }
     }
 
-    updateDrawdown(drawdown, isOnline) {
+    updateDrawdown(drawdown, mode) {
         const maxDrawdownElement = document.getElementById('max-drawdown');
         if (!maxDrawdownElement) return;
 
-        if (!drawdown || !isOnline) {
+        const isDemoMode = mode === 'demo';
+        const isOnline = mode === true;
+
+        if (!drawdown || (!isOnline && !isDemoMode)) {
             maxDrawdownElement.textContent = '--';
             maxDrawdownElement.style.color = '';
             return;
@@ -383,7 +427,9 @@ class TradingDashboard {
         // Enhanced color coding with smooth transitions
         maxDrawdownElement.style.transition = 'color 0.5s ease';
 
-        if (drawdownValue > 20) {
+        if (isDemoMode) {
+            maxDrawdownElement.style.color = '#0d6efd';
+        } else if (drawdownValue > 20) {
             maxDrawdownElement.style.color = '#dc3545'; // Red for high drawdown
         } else if (drawdownValue > 10) {
             maxDrawdownElement.style.color = '#ffc107'; // Yellow for medium drawdown
@@ -473,18 +519,32 @@ class TradingDashboard {
         this.balanceChart.update('none');
     }
 
-    updateConnectionStatus(isOnline) {
+    updateConnectionStatus(status) {
         const srvStatus = document.getElementById('srv-status');
 
         if (!srvStatus) {
             return;
         }
 
-        srvStatus.textContent = isOnline ? 'SRV: Online' : 'SRV: Offline';
+        let statusText = 'SRV: Offline';
+        let statusClass = 'status-offline';
+        let dataStatus = 'offline';
+
+        if (status === 'demo') {
+            statusText = 'SRV: Demo Mode';
+            statusClass = 'status-demo';
+            dataStatus = 'demo';
+        } else if (status) {
+            statusText = 'SRV: Online';
+            statusClass = 'status-online';
+            dataStatus = 'online';
+        }
+
+        srvStatus.textContent = statusText;
         srvStatus.classList.add('badge');
-        srvStatus.classList.remove('status-online', 'status-offline');
-        srvStatus.classList.add(isOnline ? 'status-online' : 'status-offline');
-        srvStatus.setAttribute('data-status', isOnline ? 'online' : 'offline');
+        srvStatus.classList.remove('status-online', 'status-offline', 'status-demo');
+        srvStatus.classList.add(statusClass);
+        srvStatus.setAttribute('data-status', dataStatus);
     }
 
     startRealTimeUpdates() {

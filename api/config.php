@@ -15,18 +15,28 @@ date_default_timezone_set('America/New_York'); // Adjust to your timezone
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/../logs/api.log');
 
+// Prevent mysqli from throwing exceptions so we can gracefully fall back.
+mysqli_report(MYSQLI_REPORT_OFF);
+
 // Function to get database connection
 function getDBConnection() {
     static $conn = null;
-    
+
     if ($conn === null) {
-        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-        
-        if ($conn->connect_error) {
-            error_log("Database connection failed: " . $conn->connect_error);
+        try {
+            $conn = @new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+        } catch (mysqli_sql_exception $exception) {
+            error_log("Database connection failed: " . $exception->getMessage());
+            $conn = null;
             return false;
         }
-        
+
+        if ($conn->connect_error) {
+            error_log("Database connection failed: " . $conn->connect_error);
+            $conn = null;
+            return false;
+        }
+
         $conn->set_charset("utf8");
     }
     
