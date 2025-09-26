@@ -51,9 +51,10 @@ function logAPICall($endpoint, $data = [], $response = []) {
         'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
         'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
         'data_size' => strlen(json_encode($data)),
-        'response_status' => $response['status'] ?? 'unknown'
+        'response_status' => $response['status'] ?? 'unknown',
+        'response_message' => $response['message'] ?? ($response['error'] ?? 'n/a')
     ];
-    
+
     error_log("API_CALL: " . json_encode($log_entry));
 }
 ?>
