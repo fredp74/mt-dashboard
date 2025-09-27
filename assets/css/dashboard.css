@@ -412,6 +412,14 @@ body.dashboard-page .breadcrumbs ol li a {
     color: #fff;
 }
 
+.stat-card .stat-value.profit-positive {
+    color: var(--primary);
+}
+
+.stat-card .stat-value.profit-negative {
+    color: #ff6b6b;
+}
+
 .stat-card.drawdown {
     background: linear-gradient(135deg, rgba(255, 87, 108, 0.15) 0%, rgba(255, 143, 193, 0.05) 100%);
     border-color: rgba(255, 87, 108, 0.2);
