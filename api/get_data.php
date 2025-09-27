@@ -44,34 +44,38 @@ switch ($period) {
         $groupBy = 'MINUTE(timestamp) DIV 15';
 }
 
-// Get latest MT5 account snapshot
-$currentQuery = "SELECT
-    account_type,
-    balance,
-    equity,
-    profit,
-    margin,
-    free_margin,
-    open_positions,
-    total_volume,
-    timestamp
-FROM trading_history
-WHERE account_type = 'MT5'
-ORDER BY id DESC
-LIMIT 1";
+// Get latest snapshot for each known account type
+$accountTypes = ['MT5', 'SRV'];
+$escapedAccountTypes = array_map(static function (string $type) use ($conn): string {
+    return "'" . $conn->real_escape_string($type) . "'";
+}, $accountTypes);
+$accountTypeList = implode(',', $escapedAccountTypes);
+
+$currentQuery = "SELECT th.account_type, th.balance, th.equity, th.profit, th.margin, th.free_margin, th.open_positions, th.total_volume, th.timestamp
+FROM trading_history th
+INNER JOIN (
+    SELECT account_type, MAX(id) AS latest_id
+    FROM trading_history
+    WHERE account_type IN ($accountTypeList)
+    GROUP BY account_type
+) latest ON latest.account_type = th.account_type AND latest.latest_id = th.id";
 
 $currentResult = $conn->query($currentQuery);
 if ($currentResult === false) {
     respondWithDemoData($period, 'Unable to fetch current account snapshot. Showing demo data.');
 }
+
 $currentData = [];
-if ($row = $currentResult->fetch_assoc()) {
-    $currentData['MT5'] = $row;
+while ($row = $currentResult->fetch_assoc()) {
+    $currentData[$row['account_type']] = $row;
 }
 
-$srvSnapshot = mapMt5SnapshotToSrv($currentData['MT5'] ?? []);
+$primaryAccountType = isset($currentData['SRV']) ? 'SRV' : (isset($currentData['MT5']) ? 'MT5' : null);
+$primarySnapshot = $primaryAccountType ? $currentData[$primaryAccountType] : [];
 
-$lastSnapshotTimestamp = $currentData['MT5']['timestamp'] ?? null;
+$srvSnapshot = mapMt5SnapshotToSrv($currentData['SRV'] ?? $currentData['MT5'] ?? []);
+
+$lastSnapshotTimestamp = $primarySnapshot['timestamp'] ?? null;
 $isOnline = false;
 
 if ($lastSnapshotTimestamp) {
@@ -92,7 +96,7 @@ $historyQuery = "SELECT
     AVG(profit) as profit,
     timestamp
 FROM trading_history
-WHERE timestamp >= $timeRange AND account_type = 'MT5'
+WHERE timestamp >= $timeRange AND account_type IN ($accountTypeList)
 GROUP BY time_group, account_type
 ORDER BY time_group ASC";
 
@@ -104,7 +108,7 @@ $historyData = [];
 while ($row = $historyResult->fetch_assoc()) {
     $historyData[] = [
         'timestamp' => $row['time_group'],
-        'account_type' => 'SRV',
+        'account_type' => $row['account_type'],
         'balance' => round(floatval($row['balance']), 2),
         'equity' => round(floatval($row['equity']), 2),
         'profit' => round(floatval($row['profit']), 2)
@@ -116,16 +120,19 @@ if (empty($currentData) && empty($historyData)) {
 }
 
 // Calculate maximum drawdown for the selected period
-function calculateDrawdown($conn, $timeRange) {
-    // Get equity values over time for both accounts
+function calculateDrawdown($conn, $timeRange, $accountType = null) {
+    $accountTypeCondition = '';
+    if ($accountType !== null) {
+        $accountTypeCondition = " AND account_type = '" . $conn->real_escape_string($accountType) . "'";
+    }
+
     $equityQuery = "SELECT
         timestamp,
-        SUM(equity) as total_equity
+        equity
     FROM trading_history
-    WHERE timestamp >= $timeRange AND account_type = 'MT5'
-    GROUP BY timestamp
+    WHERE timestamp >= $timeRange" . $accountTypeCondition . "
     ORDER BY timestamp ASC";
-    
+
     $equityResult = $conn->query($equityQuery);
     
     if (!$equityResult || $equityResult->num_rows === 0) {
@@ -145,7 +152,7 @@ function calculateDrawdown($conn, $timeRange) {
     $troughEquity = 0;
     
     while ($row = $equityResult->fetch_assoc()) {
-        $equity = floatval($row['total_equity']);
+        $equity = floatval($row['equity']);
         $date = $row['timestamp'];
         
         // Update peak if current equity is higher
@@ -176,13 +183,13 @@ function calculateDrawdown($conn, $timeRange) {
     ];
 }
 
-$drawdownData = calculateDrawdown($conn, $timeRange);
+$drawdownData = calculateDrawdown($conn, $timeRange, $primaryAccountType);
 
-// Calculate totals (MT5 only)
-$totalBalance = $currentData['MT5']['balance'] ?? 0;
-$totalEquity = $currentData['MT5']['equity'] ?? 0;
-$totalProfit = $currentData['MT5']['profit'] ?? 0;
-$totalPositions = $currentData['MT5']['open_positions'] ?? 0;
+// Calculate totals using the primary account snapshot
+$totalBalance = $primarySnapshot['balance'] ?? 0;
+$totalEquity = $primarySnapshot['equity'] ?? 0;
+$totalProfit = $primarySnapshot['profit'] ?? 0;
+$totalPositions = $primarySnapshot['open_positions'] ?? 0;
 
 // Calculate performance metrics
 $startBalance = 0;
@@ -190,7 +197,11 @@ $currentBalance = $totalBalance;
 $performancePercent = 0;
 
 if (count($historyData) > 0) {
-    $firstSnapshot = array_values(array_filter($historyData, function($item) {
+    $firstSnapshot = array_values(array_filter($historyData, function($item) use ($primaryAccountType) {
+        if ($primaryAccountType !== null) {
+            return $item['account_type'] === $primaryAccountType;
+        }
+
         return in_array($item['account_type'], ['SRV', 'MT5'], true);
     }))[0] ?? null;
 
@@ -203,6 +214,7 @@ if (count($historyData) > 0) {
 
 $response = [
     'current' => [
+        'account_type' => $primaryAccountType,
         'total_balance' => round($totalBalance, 2),
         'total_equity' => round($totalEquity, 2),
         'total_profit' => round($totalProfit, 2),
