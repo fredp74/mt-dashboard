@@ -207,7 +207,7 @@
             Leveraging cutting-edge AI and quantitative strategies to deliver exceptional returns through both traditional fund management and innovative blockchain solutions.
           </p>
           <p class="footer-contact">
-            hello@algotradingresearch.com
+            info@example.com
           </p>
           <div class="footer-socials">
             <a href="#" aria-label="Twitter"><i class="fab fa-twitter" aria-hidden="true"></i></a>

@@ -7,7 +7,7 @@
 #property description "Exports MT5 trading data to web server"
 
 input int UpdateIntervalSeconds = 60;  // Update interval in seconds
-input string WebServerURL = "https://algotradingresearch.com/mt-dashboard/api/receive_data.php";
+input string WebServerURL = "https://example.com/mt-dashboard/api/receive_data.php";
 input string APIKey = "api123";        // Your API key
 input bool EnableWebRequests = true;   // Enable web requests
 input bool EnableFileExport = true;    // Enable file export as backup
