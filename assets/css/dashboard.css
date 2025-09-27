@@ -331,6 +331,11 @@ body.dashboard-page .breadcrumbs ol li a {
     box-shadow: 0 0 12px rgba(13, 110, 253, 0.25);
 }
 
+.drawdown-offline {
+    color: rgba(255, 255, 255, 0.6) !important;
+    transition: color 0.3s ease;
+}
+
 #time-filter-tabs {
     display: flex;
     justify-content: center;

@@ -411,15 +411,24 @@ class TradingDashboard {
         const isDemoMode = mode === 'demo';
         const isOnline = mode === true;
 
-        if (!drawdown || (!isOnline && !isDemoMode)) {
+        if (!drawdown) {
             maxDrawdownElement.textContent = '--';
             maxDrawdownElement.style.color = '';
+            maxDrawdownElement.classList.remove('drawdown-offline');
             return;
         }
 
         //  FIX: ensure numeric conversion
         const drawdownValue = Number(drawdown.max_drawdown ?? 0);
         maxDrawdownElement.textContent = `${drawdownValue.toFixed(2)}%`;
+
+        const isOfflineMode = !isOnline && !isDemoMode;
+        maxDrawdownElement.classList.toggle('drawdown-offline', isOfflineMode);
+
+        if (isOfflineMode) {
+            maxDrawdownElement.style.color = '';
+            return;
+        }
 
         maxDrawdownElement.style.transition = 'color 0.5s ease';
 
