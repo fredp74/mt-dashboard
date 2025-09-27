@@ -1,5 +1,5 @@
 # Test receive endpoint
-curl -X POST https://algotradingresearch.com/dashboard/api/receive_data.php \
+curl -X POST https://example.com/dashboard/api/receive_data.php \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-api-key" \
   -d '{
@@ -15,4 +15,4 @@ curl -X POST https://algotradingresearch.com/dashboard/api/receive_data.php \
       }'
 
 # Test get endpoint
-curl https://algotradingresearch.com/dashboard/api/get_data.php?period=24h
+curl https://example.com/dashboard/api/get_data.php?period=24h

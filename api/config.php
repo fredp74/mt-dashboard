@@ -1,9 +1,9 @@
 <?php
 // Database configuration
 define('DB_HOST', 'localhost');
-define('DB_USER', 'algo_trading_user');
-define('DB_PASS', 't27540t27540');
-define('DB_NAME', 'algo_trading_dashboard');
+define('DB_USER', 'dashboard_user');
+define('DB_PASS', 'change_me_password');
+define('DB_NAME', 'dashboard_database');
 
 // API Security
 define('API_KEY', 'api123');

@@ -8,7 +8,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/config.php';
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: https://algotradingresearch.com');
+header('Access-Control-Allow-Origin: https://example.com');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, X-API-Key');
 
