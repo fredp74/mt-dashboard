@@ -354,14 +354,13 @@ class TradingDashboard {
         this.animateNumber('total-equity', totals.total_equity ?? 0, true);
 
         const profitElement = document.getElementById('total-profit');
-        this.animateNumber('total-profit', totals.total_profit ?? 0, true);
+        const totalProfitValue = totals.period_profit ?? totals.total_profit ?? 0;
+        this.animateNumber('total-profit', totalProfitValue, true);
 
         if (profitElement) {
-            setTimeout(() => {
-                const profitClass = (totals.total_profit ?? 0) >= 0 ? 'profit-positive' : 'profit-negative';
-                profitElement.classList.remove('profit-positive', 'profit-negative');
-                profitElement.classList.add('stat-value', profitClass);
-            }, 500);
+            const numericProfit = Number(totalProfitValue) || 0;
+            profitElement.classList.remove('profit-positive', 'profit-negative');
+            profitElement.classList.add(numericProfit >= 0 ? 'profit-positive' : 'profit-negative');
         }
 
         // Update SRV data (falls back to legacy payload structure for compatibility)
