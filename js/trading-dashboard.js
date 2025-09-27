@@ -201,7 +201,6 @@ class TradingDashboard {
     }
 
     showLoadingIndicator() {
-        // Add loading spinner to charts
         const chartContainers = document.querySelectorAll('.chart-container');
         chartContainers.forEach(container => {
             if (!container.querySelector('.loading-spinner')) {
@@ -298,7 +297,6 @@ class TradingDashboard {
     }
 
     showErrorMessage(message) {
-        // Create or update error toast
         let toast = document.getElementById('error-toast');
         if (!toast) {
             toast = document.createElement('div');
@@ -349,7 +347,6 @@ class TradingDashboard {
     updateCurrentStats(current, isOnline) {
         const totals = current || {};
 
-        // Update totals with enhanced animations
         this.animateNumber('total-balance', totals.total_balance ?? 0, true);
         this.animateNumber('total-equity', totals.total_equity ?? 0, true);
 
@@ -363,7 +360,6 @@ class TradingDashboard {
             profitElement.classList.add(numericProfit >= 0 ? 'profit-positive' : 'profit-negative');
         }
 
-        // Update SRV data (falls back to legacy payload structure for compatibility)
         const srvData = totals.srv || totals.mt5;
         if (srvData) {
             this.animateNumber('srv-balance', srvData.balance ?? 0);
@@ -389,7 +385,6 @@ class TradingDashboard {
             }
         }
 
-        // Update last update time
         const lastUpdate = document.getElementById('last-update');
         if (lastUpdate) {
             const rawTimestamp = totals.last_update;
@@ -422,20 +417,20 @@ class TradingDashboard {
             return;
         }
 
-        const drawdownValue = Math.abs(drawdown.max_drawdown ?? 0);
+        //  FIX: ensure numeric conversion
+        const drawdownValue = Number(drawdown.max_drawdown ?? 0);
         maxDrawdownElement.textContent = `${drawdownValue.toFixed(2)}%`;
 
-        // Enhanced color coding with smooth transitions
         maxDrawdownElement.style.transition = 'color 0.5s ease';
 
         if (isDemoMode) {
             maxDrawdownElement.style.color = '#0d6efd';
         } else if (drawdownValue > 20) {
-            maxDrawdownElement.style.color = '#dc3545'; // Red for high drawdown
+            maxDrawdownElement.style.color = '#dc3545';
         } else if (drawdownValue > 10) {
-            maxDrawdownElement.style.color = '#ffc107'; // Yellow for medium drawdown
+            maxDrawdownElement.style.color = '#ffc107';
         } else {
-            maxDrawdownElement.style.color = '#28a745'; // Green for low drawdown
+            maxDrawdownElement.style.color = '#28a745';
         }
     }
 
@@ -445,13 +440,11 @@ class TradingDashboard {
             return;
         }
 
-        // Process data for charts
         const timeLabels = [];
         const profitData = [];
         const srvBalanceData = [];
         const srvEquityData = [];
 
-        // Group data by timestamp
         const groupedData = {};
         historyData.forEach(row => {
             const timestamp = new Date(row.timestamp).toISOString();
@@ -466,12 +459,10 @@ class TradingDashboard {
             }
         });
 
-        // Convert grouped data to chart format
         Object.keys(groupedData).sort().forEach(timestamp => {
             const data = groupedData[timestamp];
             const date = new Date(timestamp);
             
-            // Format time label based on period
             let timeLabel;
             if (this.currentPeriod === '24h') {
                 timeLabel = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -487,16 +478,13 @@ class TradingDashboard {
             const totalProfit = accountSnapshot.profit || 0;
             profitData.push(totalProfit);
 
-            // Individual account data
             srvBalanceData.push(accountSnapshot.balance || null);
             srvEquityData.push(accountSnapshot.equity || null);
         });
 
-        // Update profit chart with enhanced visuals
         this.profitChart.data.labels = timeLabels;
         this.profitChart.data.datasets[0].data = profitData;
         
-        // Dynamic color based on performance
         const lastProfit = profitData[profitData.length - 1] || 0;
         const firstProfit = profitData[0] || 0;
         const isPositiveTrend = lastProfit >= firstProfit;
@@ -513,7 +501,6 @@ class TradingDashboard {
         
         this.profitChart.update('none');
 
-        // Update balance chart
         this.balanceChart.data.labels = timeLabels;
         this.balanceChart.data.datasets[0].data = srvBalanceData;
         this.balanceChart.data.datasets[1].data = srvEquityData;
@@ -549,7 +536,6 @@ class TradingDashboard {
     }
 
     startRealTimeUpdates() {
-        // Update every 30 seconds
         this.updateInterval = setInterval(() => {
             this.fetchData();
         }, 30000);
@@ -561,7 +547,6 @@ class TradingDashboard {
         }
     }
 
-    // Enhanced number animation with easing
     animateNumber(elementId, targetValue, isCurrency = false) {
         const element = document.getElementById(elementId);
         if (!element) return;
@@ -572,14 +557,11 @@ class TradingDashboard {
         }
 
         const currentValue = parseFloat(element.textContent.replace(/[$,]/g, '')) || 0;
-        const increment = (sanitizedTarget - currentValue) / 30; // 30 steps for smoother animation
+        const increment = (sanitizedTarget - currentValue) / 30;
         let currentStep = 0;
 
         const timer = setInterval(() => {
             currentStep++;
-            // Easing function for smooth animation
-            const progress = currentStep / 30;
-            const easedProgress = 1 - Math.pow(1 - progress, 3); // Ease out cubic
             const newValue = currentValue + (increment * currentStep);
 
             if (isCurrency) {
@@ -590,14 +572,13 @@ class TradingDashboard {
             
             if (currentStep >= 30) {
                 clearInterval(timer);
-                // Set final value to ensure accuracy
                 if (isCurrency) {
                     element.textContent = this.formatCurrency(sanitizedTarget);
                 } else {
                     element.textContent = this.formatNumber(sanitizedTarget);
                 }
             }
-        }, 33); // ~30fps animation
+        }, 33);
     }
 
     formatCurrency(amount) {
@@ -616,15 +597,12 @@ class TradingDashboard {
     }
 }
 
-// Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Wait for AOS to initialize
     setTimeout(() => {
         window.tradingDashboard = new TradingDashboard();
     }, 100);
 });
 
-// Cleanup on page unload
 window.addEventListener('beforeunload', function() {
     if (window.tradingDashboard) {
         window.tradingDashboard.stopRealTimeUpdates();
