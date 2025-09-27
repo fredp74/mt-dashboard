@@ -1,4 +1,3 @@
--- Auto-generated from ReportHistory-81009.xlsx
 TRUNCATE TABLE `trading_history`;
 
 INSERT INTO `trading_history` (`account_type`, `balance`, `equity`, `profit`, `margin`, `free_margin`, `open_positions`, `total_volume`, `drawdown`, `timestamp`) VALUES
@@ -3227,4 +3226,3 @@ INSERT INTO `trading_history` (`account_type`, `balance`, `equity`, `profit`, `m
 ('MT5', 99263.10, 99263.10, 102008.51, 0.00, 99263.10, 0, 0.00, 0.0973, '2025-09-26 16:40:06'),
 ('MT5', 101756.78, 101756.78, 104591.61, 0.00, 101756.78, 0, 0.00, 0.0000, '2025-09-26 17:09:30'),
 ('MT5', 101782.22, 101782.22, 104617.05, 0.00, 101782.22, 0, 0.00, 0.0000, '2025-09-26 21:40:26');
-
