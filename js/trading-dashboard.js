@@ -358,7 +358,9 @@ class TradingDashboard {
 
         if (profitElement) {
             setTimeout(() => {
-                profitElement.className = (totals.total_profit ?? 0) >= 0 ? 'profit-positive' : 'profit-negative';
+                const profitClass = (totals.total_profit ?? 0) >= 0 ? 'profit-positive' : 'profit-negative';
+                profitElement.classList.remove('profit-positive', 'profit-negative');
+                profitElement.classList.add('stat-value', profitClass);
             }, 500);
         }
 
