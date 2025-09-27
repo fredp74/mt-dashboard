@@ -186,30 +186,54 @@ function calculateDrawdown($conn, $timeRange, $accountType = null) {
 $drawdownData = calculateDrawdown($conn, $timeRange, $primaryAccountType);
 
 // Calculate totals using the primary account snapshot
-$totalBalance = $primarySnapshot['balance'] ?? 0;
-$totalEquity = $primarySnapshot['equity'] ?? 0;
-$totalProfit = $primarySnapshot['profit'] ?? 0;
+$totalBalance = floatval($primarySnapshot['balance'] ?? 0);
+$totalEquity = floatval($primarySnapshot['equity'] ?? 0);
+$totalProfit = floatval($primarySnapshot['profit'] ?? 0);
 $totalPositions = $primarySnapshot['open_positions'] ?? 0;
 
 // Calculate performance metrics
 $startBalance = 0;
 $currentBalance = $totalBalance;
 $performancePercent = 0;
+$periodProfit = null;
 
 if (count($historyData) > 0) {
-    $firstSnapshot = array_values(array_filter($historyData, function($item) use ($primaryAccountType) {
+    $filteredHistory = array_values(array_filter($historyData, function($item) use ($primaryAccountType) {
         if ($primaryAccountType !== null) {
             return $item['account_type'] === $primaryAccountType;
         }
 
         return in_array($item['account_type'], ['SRV', 'MT5'], true);
-    }))[0] ?? null;
+    }));
 
-    $startBalance = $firstSnapshot['balance'] ?? 0;
+    $firstSnapshot = $filteredHistory[0] ?? null;
+    $lastSnapshot = $filteredHistory[count($filteredHistory) - 1] ?? null;
+
+    $startBalance = floatval($firstSnapshot['balance'] ?? 0);
+    $endBalance = floatval($lastSnapshot['balance'] ?? $currentBalance);
 
     if ($startBalance > 0) {
         $performancePercent = (($currentBalance - $startBalance) / $startBalance) * 100;
     }
+
+    if ($firstSnapshot !== null && $lastSnapshot !== null) {
+        $startProfit = $firstSnapshot['profit'] ?? null;
+        $endProfit = $lastSnapshot['profit'] ?? null;
+
+        if ($startProfit !== null && $endProfit !== null) {
+            $periodProfit = floatval($endProfit) - floatval($startProfit);
+        } elseif ($startBalance !== null) {
+            $periodProfit = $endBalance - $startBalance;
+        }
+    }
+}
+
+if ($periodProfit === null) {
+    $periodProfit = $totalProfit;
+}
+
+if (abs(floatval($totalProfit)) < 0.01 && $periodProfit !== null) {
+    $totalProfit = $periodProfit;
 }
 
 $response = [
@@ -220,6 +244,7 @@ $response = [
         'total_profit' => round($totalProfit, 2),
         'total_positions' => $totalPositions,
         'performance_percent' => round($performancePercent, 2),
+        'period_profit' => round($periodProfit ?? 0, 2),
         'mt5' => $currentData['MT5'] ?? [
             'balance' => 0,
             'equity' => 0,
