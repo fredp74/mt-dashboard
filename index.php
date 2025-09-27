@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Live Trading Dashboard - AlgoTradingResearch - Maximize Your Profits with HFT</title>
+  <title>Live Trading Dashboard - MT Dashboard - Maximize Your Profits with HFT</title>
   <meta content="Real-time trading results and performance analytics for our Expert Advisors" name="description">
   <meta content="trading dashboard, SRV, forex trading, algorithmic trading, HFT" name="keywords">
 
@@ -39,7 +39,7 @@
   <header class="atr-header fixed-top">
     <div class="container header-container">
       <div class="logo">
-        <a href="/"><img src="assets/img/logo.png" alt="AlgoTradingResearch Logo" class="img-fluid"></a>
+        <a href="/"><img src="assets/img/logo.png" alt="MT Dashboard Logo" class="img-fluid"></a>
       </div>
       <nav class="atr-nav">
         <ul id="atr-menu">
@@ -201,18 +201,18 @@
       <div class="footer-content">
         <div class="footer-logo">
           <div class="logo">
-            <img src="assets/img/logo.png" alt="AlgoTradingResearch Logo">
+            <img src="assets/img/logo.png" alt="MT Dashboard Logo">
           </div>
           <p>
-            Leveraging cutting-edge AI and quantitative strategies to deliver exceptional returns through both traditional fund management and innovative blockchain solutions.
+            MT Dashboard showcases sample trading analytics and portfolio monitoring tools designed for demonstration and evaluation purposes.
           </p>
           <p class="footer-contact">
-            info@example.com
+            hello@mtdashboard.example
           </p>
           <div class="footer-socials">
             <a href="#" aria-label="Twitter"><i class="fab fa-twitter" aria-hidden="true"></i></a>
-            <a href="#" aria-label="Telegram"><i class="fab fa-telegram" aria-hidden="true"></i></a>
-            <a href="#" aria-label="Discord"><i class="fab fa-discord" aria-hidden="true"></i></a>
+            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin" aria-hidden="true"></i></a>
+            <a href="#" aria-label="GitHub"><i class="fab fa-github" aria-hidden="true"></i></a>
           </div>
         </div>
 
@@ -220,12 +220,12 @@
           <div>
             <h3>Navigation</h3>
             <ul>
-              <li><a href="/#hero">Home</a></li>
-              <li><a href="/#about">The Fund</a></li>
-              <li><a href="/#token">$FATR Token</a></li>
+              <li><a href="/#hero">Overview</a></li>
+              <li><a href="/#about">Features</a></li>
               <li><a href="/#performance">Performance</a></li>
               <li><a href="/#roadmap">Roadmap</a></li>
-              <li><a href="/#investment">Invest</a></li>
+              <li><a href="/#investment">Pricing</a></li>
+              <li><a href="/#contact">Contact</a></li>
             </ul>
           </div>
 
@@ -235,25 +235,25 @@
               <li><a href="privacy.php">Privacy Policy</a></li>
               <li><a href="terms.php">Terms &amp; Conditions</a></li>
               <li><a href="disclosures.php">Disclosures</a></li>
-              <li><a href="risks.php">Risk Warning</a></li>
-              <li><a href="token.php">Token Terms</a></li>
+              <li><a href="risks.php">Risk Statement</a></li>
+              <li><a href="cookies.php">Cookie Policy</a></li>
             </ul>
           </div>
 
           <div>
             <h3>Resources</h3>
             <ul>
-              <li><a href="#">Whitepaper</a></li>
-              <li><a href="#">$FATR Tokenomics</a></li>
-              <li><a href="#">Security Audit</a></li>
-              <li><a href="#">FAQ</a></li>
+              <li><a href="#">Documentation</a></li>
+              <li><a href="#">API Reference</a></li>
+              <li><a href="#">Status Page</a></li>
+              <li><a href="#">Knowledge Base</a></li>
             </ul>
           </div>
         </div>
       </div>
 
       <div class="copyright">
-        &copy; <?php echo date("Y"); ?> AlgoTradingResearch. All rights reserved. | $FATR Token is a product of AlgoTradingResearch.
+        &copy; <?php echo date("Y"); ?> MT Dashboard. Demo content for illustrative purposes only.
       </div>
     </div>
   </footer>
