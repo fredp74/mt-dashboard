@@ -55,7 +55,7 @@ function checkmail(input)
 
 										$('#contact_form').fadeOut(500);
 										$('#contact_message').fadeIn(2000);
-										document.getElementById("contact_message").innerHTML = "Oops, Your message hasn't been sent. Try later or contact hello@algotradinresearch.com.";
+                                                                                document.getElementById("contact_message").innerHTML = "Oops, your message hasn't been sent. Try later or contact hello@mtdashboard.example.";
 										return true;
 									}
 								}
