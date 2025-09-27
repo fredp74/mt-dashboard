@@ -188,7 +188,6 @@ $drawdownData = calculateDrawdown($conn, $timeRange, $primaryAccountType);
 // Calculate totals using the primary account snapshot
 $totalBalance = floatval($primarySnapshot['balance'] ?? 0);
 $totalEquity = floatval($primarySnapshot['equity'] ?? 0);
-$totalProfit = floatval($primarySnapshot['profit'] ?? 0);
 $totalPositions = $primarySnapshot['open_positions'] ?? 0;
 
 // Calculate performance metrics
@@ -222,26 +221,31 @@ if (count($historyData) > 0) {
 
         if ($startProfit !== null && $endProfit !== null) {
             $periodProfit = floatval($endProfit) - floatval($startProfit);
+
+            // ✅ Detect broker profit reset → show 0 instead of -X
+            if ($endProfit == 0 && $startProfit > 0) {
+                $periodProfit = 0;
+            }
+
+            // ✅ If no change at all
+            if ($endProfit == $startProfit) {
+                $periodProfit = 0;
+            }
         } elseif ($startBalance !== null) {
             $periodProfit = $endBalance - $startBalance;
         }
     }
 }
 
-if ($periodProfit === null) {
-    $periodProfit = $totalProfit;
-}
-
-if (abs(floatval($totalProfit)) < 0.01 && $periodProfit !== null) {
-    $totalProfit = $periodProfit;
-}
+// ✅ Always base total profit on computed period profit
+$totalProfit = $periodProfit ?? 0;
 
 $response = [
     'current' => [
         'account_type' => $primaryAccountType,
         'total_balance' => round($totalBalance, 2),
         'total_equity' => round($totalEquity, 2),
-        'total_profit' => round($totalProfit, 2),
+        'total_profit' => round($periodProfit ?? 0, 2), // ✅ force total = period
         'total_positions' => $totalPositions,
         'performance_percent' => round($performancePercent, 2),
         'period_profit' => round($periodProfit ?? 0, 2),
@@ -263,6 +267,15 @@ $response = [
     'status' => 'success',
     'data_points' => count($historyData)
 ];
+
+// ✅ Debug log: write values to profit_debug.log
+file_put_contents(__DIR__ . "/profit_debug.log", json_encode([
+    'startProfit' => $startProfit ?? null,
+    'endProfit'   => $endProfit ?? null,
+    'periodProfit'=> $periodProfit ?? null,
+    'totalProfit' => $totalProfit ?? null,
+    'rawProfit'   => $primarySnapshot['profit'] ?? null
+], JSON_PRETTY_PRINT) . PHP_EOL, FILE_APPEND);
 
 logAPICall('get_data', ['period' => $period], $response);
 
