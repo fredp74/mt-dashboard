@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Live Trading Dashboard - AlgoTradingResearch - Maximize Your Profits with HFT</title>
+  <title>Live Trading Dashboard - MT Dashboard - Maximize Your Profits with HFT</title>
   <meta content="Real-time trading results and performance analytics for our Expert Advisors" name="description">
   <meta content="trading dashboard, SRV, forex trading, algorithmic trading, HFT" name="keywords">
 
@@ -39,7 +39,7 @@
   <header class="atr-header fixed-top">
     <div class="container header-container">
       <div class="logo">
-        <a href="/"><img src="assets/img/logo.png" alt="AlgoTradingResearch Logo" class="img-fluid"></a>
+        <a href="/"><img src="assets/img/logo.png" alt="MT Dashboard Logo" class="img-fluid"></a>
       </div>
       <nav class="atr-nav">
         <ul id="atr-menu">
@@ -201,7 +201,7 @@
       <div class="footer-content">
         <div class="footer-logo">
           <div class="logo">
-            <img src="assets/img/logo.png" alt="AlgoTradingResearch Logo">
+            <img src="assets/img/logo.png" alt="MT Dashboard Logo">
           </div>
           <p>
             Leveraging cutting-edge AI and quantitative strategies to deliver exceptional returns through both traditional fund management and innovative blockchain solutions.
@@ -253,7 +253,7 @@
       </div>
 
       <div class="copyright">
-        &copy; <?php echo date("Y"); ?> AlgoTradingResearch. All rights reserved. | $FATR Token is a product of AlgoTradingResearch.
+        &copy; <?php echo date("Y"); ?> MT Dashboard. All rights reserved. | $FATR Token is a product of MT Dashboard.
       </div>
     </div>
   </footer>
