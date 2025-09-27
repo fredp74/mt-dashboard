@@ -253,7 +253,7 @@
       </div>
 
       <div class="copyright">
-        &copy; <?php echo date("Y"); ?> MT Dashboard. Demo content for illustrative purposes only.
+        &copy; <?php echo date("Y"); ?> MT Dashboard. All rights reserved.
       </div>
     </div>
   </footer>
