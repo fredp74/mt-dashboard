@@ -253,7 +253,7 @@
       </div>
 
       <div class="copyright">
-        &copy; <?php echo date("Y"); ?> MT Dashboard. All rights reserved. | $FATR Token is a product of MT Dashboard.
+        &copy; <?php echo date("Y"); ?> MT Dashboard. All rights reserved.
       </div>
     </div>
   </footer>
