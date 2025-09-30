@@ -167,7 +167,7 @@ CREATE TABLE trading_history (
    ```
 2. Configure database credentials in `api/config.php` and set a strong API key.
 3. Import the schema from `mysql.txt`.
-4. Compile `TradingDataExporter.mq5` with MetaTrader and deploy the `.ex5` into your terminal.
+4. Compile `TradingDataExporter.mq5` with MetaTrader Editor and deploy the `.ex5` into your terminal.
 5. Serve the dashboard through Apache/Nginx or the PHP built-in server:
    ```bash
    php -S 0.0.0.0:8000
