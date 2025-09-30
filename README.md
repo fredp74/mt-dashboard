@@ -93,7 +93,7 @@ input string ExportFileName = "mt5_data.json";     // File name for local export
    - ✅ Check **Allow WebRequest for listed URL**.
    - Add your backend URL, e.g.:
      ```
-     http://localhost:8080
+     http://localhost:8000
      ```
      or your deployed domain if hosted online.
 4. The exporter now sends account + trading data every `UpdateIntervalSeconds` to your backend.
@@ -172,7 +172,7 @@ CREATE TABLE trading_history (
    ```bash
    php -S 0.0.0.0:8000
    ```
-6. Visit `http://localhost:8000/index.php` to verify the dashboard is running.
+6. Visit `http://localhost:8000/mt-dashboard/index.php` to verify the dashboard is running.
 
 ---
 
