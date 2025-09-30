@@ -135,7 +135,7 @@ Access via:
 Minimal MariaDB schema required. Example (from `mysql.txt`):
 
 ```sql
-CREATE TABLE trades (
+CREATE TABLE trading_history (
   id INT AUTO_INCREMENT PRIMARY KEY,
   ticket BIGINT,
   symbol VARCHAR(20),
