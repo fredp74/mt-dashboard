@@ -93,7 +93,7 @@ input string ExportFileName = "mt5_data.json";     // File name for local export
    - ✅ Check **Allow WebRequest for listed URL**.
    - Add your backend URL, e.g.:
      ```
-     http://localhost/mt-dashboard/api/receive_data.php
+     http://localhost:8080
      ```
      or your deployed domain if hosted online.
 4. The exporter now sends account + trading data every `UpdateIntervalSeconds` to your backend.
