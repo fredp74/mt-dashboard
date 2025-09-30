@@ -126,7 +126,7 @@ input string ExportFileName = "mt5_data.json";     // File name for local export
 
 Access via:
 
-👉 `http://localhost/mt-dashboard/index.php` (or your deployed URL).
+👉 `http://localhost:8000/mt-dashboard/index.php` (or your deployed URL).
 
 ---
 
