@@ -191,7 +191,7 @@ Before making the repository public, confirm:
 ## 📌 Status
 
 - ✅ API + logging functional
-- ✅ Dashboard frontend with Bootstrap 5.2.3
+- ✅ Dashboard frontend with PHP 8.3 & Bootstrap 5.2.3
 - ✅ MT5 exporter included
 - 🚧 To improve: Chart.js visualizations, error handling, user auth
 
