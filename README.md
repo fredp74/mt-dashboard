@@ -117,7 +117,7 @@ input string ExportFileName = "mt5_data.json";     // File name for local export
 
 ## 💻 Frontend Dashboard
 
-- Built with **PHP + Bootstrap 5.2.3** for layout/styling.
+- Built with **PHP 8.3 + Bootstrap 5.2.3** for layout/styling.
 - Uses `trading-dashboard.js` for interactive charts and live updates.
 - Displays:
   - Account balances
