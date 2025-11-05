@@ -29,7 +29,7 @@ MT Dashboard is a lightweight PHP + MariaDB stack that ingests trading telemetry
 
 - 📡 **MetaTrader Integration** – MT5 Expert Advisors export live account and trade data.
 - 🗄️ **Backend API** – PHP endpoints (`/api/`) receive, log, and insert the data into MariaDB.
-- 📊 **Frontend Dashboard** – PHP + JS dashboard for balances, equity, profit, and drawdown charts.
+- 📊 **Frontend Dashboard** – PHP 8.3 + JS dashboard for balances, equity, profit, and drawdown charts.
 - 🛠️ **Bootstrap 5.2.3** styling for a clean, responsive UI.
 
 ---
